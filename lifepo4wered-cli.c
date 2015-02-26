@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include "lifepo4wered-data.h"
 
 
@@ -31,7 +32,7 @@ enum eDataFormat {
 
 void print_help(char *name, char *error) {
   if (error) {
-    printf("ERROR: %s\n\n", error);
+    fprintf(stderr, "ERROR: %s\n\n", error);
   }
   printf("Usage: %s <operation> <variable> [value]\n\n", name);
   printf("Available operations:\n");
@@ -112,7 +113,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (op == OP_WRITE && argc < 4) {
-    print_help(argv[0], "No write data specified");
+    print_help(argv[0], "No write value specified");
     return 3;
   }
 
@@ -132,4 +133,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (op == OP_WRITE) {
+    int32_t value = strtol(argv[3], NULL, 0);
+    write_lifepo4wered(var, value);
+    printf("%d\n", value);
+  }
+
+  return 0;
 }

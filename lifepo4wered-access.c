@@ -4,7 +4,6 @@
  * Released under the GPL v2
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <linux/i2c.h>
