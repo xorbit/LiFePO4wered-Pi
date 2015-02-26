@@ -1,3 +1,7 @@
+build
+.deps
+*.pyc
+
 # Object files
 *.o
 *.ko
