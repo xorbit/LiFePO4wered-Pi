@@ -2,29 +2,62 @@
 from fabricate import *
 import os
 
-target = 'lifepo4wered-cli'
-sources = ['lifepo4wered-access', 'lifepo4wered-data', 'lifepo4wered-cli']
-cflags = '-std=c99 -Wall -O2'.split()
-lflags = ''.split()
+build_targets = {
+  'CLI': {
+    'name': 'lifepo4wered-cli',
+    'sources': [
+      'lifepo4wered-access',
+      'lifepo4wered-data',
+      'lifepo4wered-cli'
+    ],
+    'cflags': '-std=c99 -Wall -O2'.split(),
+    'lflags': ''.split()
+  },
+  'SO': {
+    'name': 'liblifepo4wered.so',
+    'sources': [
+      'lifepo4wered-access',
+      'lifepo4wered-data'
+    ],
+    'cflags': '-std=c99 -Wall -O2 -fpic'.split(),
+    'lflags': '-shared'.split()
+  }
+}
+    
+def build(target=None):
+    compile(target)
+    link(target)
 
-def build():
-    compile()
-    link()
+def cli():
+    build('CLI')
+
+def so():
+    build('SO')
 
 def oname(build_dir, filename):
     return os.path.join(build_dir, os.path.basename(filename))
 
-def compile(build_dir='build', flags=None):
-    try:
-      os.mkdir(build_dir)
-    except:
-      pass
-    for source in sources:
-        run('gcc', '-c', source + '.c', '-o', oname(build_dir, source+'.o'), cflags, flags)
+def compile(build_dir='build', target=None, flags=None):
+    if target != None:
+      targets = [target]
+    else:
+      targets = build_targets.keys()
+    for target in targets:
+      try:
+        os.mkdir(target)
+      except:
+        pass
+      for source in build_targets[target]['sources']:
+          run('gcc', '-c', source + '.c', '-o', oname(target, source+'.o'), build_targets[target]['cflags'], flags)
 
-def link(build_dir='build', flags=None):
-    objects = [oname(build_dir, s + '.o') for s in sources]
-    run('gcc', objects, '-o', oname(build_dir, target), lflags, flags)
+def link(build_dir='build', target=None, flags=None):
+    if target != None:
+      targets = [target]
+    else:
+      targets = build_targets.keys()
+    for target in targets:
+      objects = [oname(target, s + '.o') for s in build_targets[target]['sources']]
+      run('gcc', objects, '-o', oname(target, build_targets[target]['name']), build_targets[target]['lflags'], flags)
 
 def check():
     return int(outofdate(build))
