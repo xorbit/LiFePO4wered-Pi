@@ -13,6 +13,16 @@ build_targets = {
     'cflags': '-std=c99 -Wall -O2'.split(),
     'lflags': ''.split()
   },
+  'DAEMON': {
+    'name': 'lifepo4wered-daemon',
+    'sources': [
+      'lifepo4wered-access',
+      'lifepo4wered-data',
+      'lifepo4wered-daemon'
+    ],
+    'cflags': '-std=c99 -Wall -O2'.split(),
+    'lflags': ''.split()
+  },
   'SO': {
     'name': 'liblifepo4wered.so',
     'sources': [
@@ -33,6 +43,9 @@ def cli():
 
 def so():
     build('SO')
+
+def daemon():
+    build('DAEMON')
 
 def oname(build_dir, filename):
     return os.path.join(build_dir, os.path.basename(filename))
