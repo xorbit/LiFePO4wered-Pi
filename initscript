@@ -10,8 +10,8 @@
 # Description: LiFePO4wered/Pi system-side daemon
 ### END INIT INFO
 
-# Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/sbin
+# Daemon name and location
+DIR=DAEMON_DIRECTORY
 DAEMON_NAME=lifepo4wered-daemon
 DAEMON=$DIR/$DAEMON_NAME
 
@@ -37,6 +37,11 @@ case "$1" in
 
 start|stop)
 do_${1}
+;;
+
+restart|reload)
+do_stop
+do_start
 ;;
 
 status)
