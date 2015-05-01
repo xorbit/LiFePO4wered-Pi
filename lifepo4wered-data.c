@@ -41,8 +41,9 @@ struct {
   /* VIN_SHDN         */  { 0x08,   5000,   1023,   2,  2 },
   /* VIN_BOOT         */  { 0x0A,   5000,   1023,   2,  2 },
   /* VOUT_MAX         */  { 0x0C, 554878, 102300,   2,  2 },
-  /* PI_RUNNING       */  { 0x0F,      1,      1,   1,  1 },
-  /* CFG_WRITE        */  { 0x0E,      1,      1,   1,  1 },
+  /* AUTO_BOOT        */  { 0x0E,      1,      1,   1,  1 },
+  /* PI_RUNNING       */  { 0x10,      1,      1,   1,  1 },
+  /* CFG_WRITE        */  { 0x0F,      1,      1,   1,  1 },
 };
 
 
