@@ -35,8 +35,8 @@ build_targets = {
 }
     
 def build(target=None):
-    compile(target)
-    link(target)
+    compile(target=target)
+    link(target=target)
 
 def cli():
     build('CLI')
@@ -47,8 +47,8 @@ def so():
 def daemon():
     build('DAEMON')
 
-def oname(build_dir, filename):
-    return os.path.join(build_dir, os.path.basename(filename))
+def oname(build_dir, target, filename):
+    return os.path.join(build_dir, target, os.path.basename(filename))
 
 def compile(build_dir='build', target=None, flags=None):
     if target != None:
@@ -57,11 +57,13 @@ def compile(build_dir='build', target=None, flags=None):
       targets = build_targets.keys()
     for target in targets:
       try:
-        os.mkdir(target)
+        os.makedirs(oname(build_dir, target, ''))
       except:
         pass
       for source in build_targets[target]['sources']:
-          run('gcc', '-c', source + '.c', '-o', oname(target, source+'.o'), build_targets[target]['cflags'], flags)
+          run('gcc', '-c', source + '.c', '-o',
+              oname(build_dir, target, source+'.o'),
+              build_targets[target]['cflags'], flags)
 
 def link(build_dir='build', target=None, flags=None):
     if target != None:
@@ -69,8 +71,11 @@ def link(build_dir='build', target=None, flags=None):
     else:
       targets = build_targets.keys()
     for target in targets:
-      objects = [oname(target, s + '.o') for s in build_targets[target]['sources']]
-      run('gcc', objects, '-o', oname(target, build_targets[target]['name']), build_targets[target]['lflags'], flags)
+      objects = [oname(build_dir, target, s + '.o')
+                 for s in build_targets[target]['sources']]
+      run('gcc', objects, '-o',
+          oname(build_dir, target, build_targets[target]['name']),
+          build_targets[target]['lflags'], flags)
 
 def check():
     return int(outofdate(build))
