@@ -29,14 +29,14 @@ struct {
   uint8_t   write_bytes;
 } static const var_table[LFP_VAR_COUNT] = {
   /* I2C_ADDRESS      */  { 0x00,      1,      1,   1,  1 },
-  /* TOUCH_STATE      */  { 0x14,      1,      1,   1,  0 },
+  /* TOUCH_STATE      */  { 0x15,      1,      1,   1,  0 },
   /* TOUCH_CAP_CYCLES */  { 0x01,      1,      1,   1,  1 },
   /* TOUCH_THRESHOLD  */  { 0x02,      1,      1,   1,  1 },
   /* TOUCH_HYSTERESIS */  { 0x03,      1,      1,   1,  1 },
   /* DCO_RSEL         */  { 0x04,      1,      1,   1,  1 },
   /* DCO_DCOMOD       */  { 0x05,      1,      1,   1,  1 },
-  /* VIN              */  { 0x10,   5000,   1023,   2,  0 },
-  /* VOUT             */  { 0x12, 554878, 102300,   2,  0 },
+  /* VIN              */  { 0x11,   5000,   1023,   2,  0 },
+  /* VOUT             */  { 0x13, 554878, 102300,   2,  0 },
   /* VIN_MIN          */  { 0x06,   5000,   1023,   2,  2 },
   /* VIN_SHDN         */  { 0x08,   5000,   1023,   2,  2 },
   /* VIN_BOOT         */  { 0x0A,   5000,   1023,   2,  2 },
