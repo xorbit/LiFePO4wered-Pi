@@ -37,7 +37,6 @@ void set_term_handler(void) {
 /* Shut down the system */
 
 void shutdown(void) {
-  //char *params[4] = {"shutdown", "-h", "now", NULL};
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
 }
@@ -47,7 +46,9 @@ int main(int argc, char *argv[]) {
   daemon(0, 0);
 
   /* Set LiFePO4wered/Pi running flag */
-  write_lifepo4wered(PI_RUNNING, 1);
+  while (read_lifepo4wered(PI_RUNNING) == 0) {
+    write_lifepo4wered(PI_RUNNING, 1);
+  }
   running = 1;
 
   /* Set handler for TERM signal */
