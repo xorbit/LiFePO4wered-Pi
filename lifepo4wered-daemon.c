@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <syslog.h>
 #include "lifepo4wered-data.h"
 
 
@@ -37,6 +38,7 @@ void set_term_handler(void) {
 /* Shut down the system */
 
 void shutdown(void) {
+  syslog(LOG_INFO, "LiFePO4wered/Pi triggered shutdown");
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
 }
@@ -45,9 +47,14 @@ int main(int argc, char *argv[]) {
   /* Fork and detach to run as daemon */
   daemon(0, 0);
 
+  /* Open the syslog */
+  openlog("LiFePO4wered/Pi", LOG_PID|LOG_CONS, LOG_DAEMON);
+  syslog(LOG_INFO, "LiFePO4wered/Pi daemon started");
+
   /* Set LiFePO4wered/Pi running flag */
-  while (read_lifepo4wered(PI_RUNNING) == 0) {
+  while (read_lifepo4wered(PI_RUNNING) != 1) {
     write_lifepo4wered(PI_RUNNING, 1);
+    sleep(1);
   }
   running = 1;
 
@@ -56,11 +63,13 @@ int main(int argc, char *argv[]) {
 
   /* Sleep while the Pi is on, until this daemon gets a signal
    * to terminate (which might be because the LiFePO4wered/Pi
-   * running flag is reset */
+   * running flag is reset) */
   while (running) {
     /* Start shutdown if the LiFePO4wered/Pi running flag is reset */
-    if (read_lifepo4wered(PI_RUNNING) == 0)
+    if (read_lifepo4wered(PI_RUNNING) == 0) {
+      syslog(LOG_INFO, "Signal from LiFePO4wered/Pi to shut down");
       shutdown();
+    }
     
     /* Sleep most of the time */
     sleep(1);
@@ -68,6 +77,10 @@ int main(int argc, char *argv[]) {
 
   /* Tell the LiFePO4wered/Pi we're shutting down */
   write_lifepo4wered(PI_RUNNING, 0);
+  syslog(LOG_INFO, "Signal LiFePO4wered/Pi that system is shutting down");
+
+  /* Close the syslog */
+  closelog();
 
   return 1;
 }
