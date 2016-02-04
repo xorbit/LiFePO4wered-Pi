@@ -29,6 +29,7 @@
   LIFEPO4WERED_VAR(VIN_BOOT)                        \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
+  LIFEPO4WERED_VAR(WAKE_TIME)                       \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
