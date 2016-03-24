@@ -15,7 +15,9 @@
  * LiFePO4wered/Pi variables */
 
 #define FOREACH_LIFEPO4WERED_VAR(LIFEPO4WERED_VAR)  \
+  LIFEPO4WERED_VAR(I2C_REG_VER)                     \
   LIFEPO4WERED_VAR(I2C_ADDRESS)                     \
+  LIFEPO4WERED_VAR(LED_STATE)                       \
   LIFEPO4WERED_VAR(TOUCH_STATE)                     \
   LIFEPO4WERED_VAR(TOUCH_CAP_CYCLES)                \
   LIFEPO4WERED_VAR(TOUCH_THRESHOLD)                 \
@@ -51,6 +53,13 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 #define TOUCH_HELD          0x0F
 #define TOUCH_ACTIVE_MASK   0x03
 #define TOUCH_MASK          0x0F
+
+/* LED states when Pi on */
+
+#define LED_STATE_OFF       0x00
+#define LED_STATE_ON        0x01
+#define LED_STATE_PULSING   0x02
+#define LED_STATE_FLASHING  0x03
 
 
 /* Read data from LiFePO4wered/Pi */
