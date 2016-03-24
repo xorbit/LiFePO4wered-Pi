@@ -35,11 +35,22 @@ then
 fi
 
 # Check whether I2C is enabled in the device tree
-if ! grep -q i2c=on /boot/config.txt
+if ! grep -q i2c_arm=on /boot/config.txt
 then
   echo "" >> /boot/config.txt
   echo "# Device tree settings" >> /boot/config.txt
-  echo "dtparam=i2c=on,spi=on" >> /boot/config.txt
+  echo "dtparam=i2c1=on" >> /boot/config.txt
+  echo "dtparam=i2c_arm=on" >> /boot/config.txt
   echo "Enabling I2C in device tree configuration"
+  echo "You need to reboot for this to take effect!"
+fi
+
+# Check whether I2C device module is loaded
+if ! grep -q i2c-dev /etc/modules
+then
+  echo "" >> /etc/modules
+  echo "# Load I2C device module" >> /etc/modules
+  echo "i2c-dev" >> /etc/modules
+  echo "Enabling I2C device module"
   echo "You need to reboot for this to take effect!"
 fi
