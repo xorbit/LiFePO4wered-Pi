@@ -32,6 +32,7 @@
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
+  LIFEPO4WERED_VAR(SHDN_DELAY)                      \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
@@ -61,6 +62,16 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 #define LED_STATE_PULSING   0x02
 #define LED_STATE_FLASHING  0x03
 
+/* Register access masks */
+
+#define ACCESS_READ         0x01
+#define ACCESS_WRITE        0x02
+
+
+/* Determine if the specified variable can be accessed in the specified
+ * manner (read, write or both) */
+
+bool access_lifepo4wered(enum eLiFePO4weredVar var, uint8_t access_mask);
 
 /* Read data from LiFePO4wered/Pi */
 
@@ -68,7 +79,7 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar);
 
 /* Write data to LiFePO4wered/Pi */
 
-void write_lifepo4wered(enum eLiFePO4weredVar, int32_t value);
+int32_t write_lifepo4wered(enum eLiFePO4weredVar, int32_t value);
 
 
 #endif

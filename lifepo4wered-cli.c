@@ -30,18 +30,26 @@ enum eDataFormat {
 
 /* Print help */
 
-void print_help(char *name, char *error) {
+void print_help(char *name, char *error, uint8_t access_mask) {
   if (error) {
     fprintf(stderr, "ERROR: %s\n\n", error);
   }
-  printf("Usage: %s <operation> <variable> [value]\n\n", name);
-  printf("Available operations:\n");
-  printf("READ or GET: get variable and print it in decimal\n");
-  printf("READHEX, GETHEX or HEX: get variable and print it in hexadecimal\n");
-  printf("WRITE, SET or PUT: set the variable to the provided value\n\n");
-  printf("Available variables:\n");
+  if (access_mask & ACCESS_READ && access_mask & ACCESS_WRITE) {
+    printf("Usage: %s <operation> <variable> [value]\n\n", name);
+    printf("Available operations:\n");
+    printf("READ or GET: get variable and print it in decimal\n");
+    printf("READHEX, GETHEX or HEX: get variable and print it in hexadecimal\n");
+    printf("WRITE, SET or PUT: set the variable to the provided value\n\n");
+    printf("Available variables:\n");
+  } else if (access_mask & ACCESS_READ) {
+    printf("Available variables for READ:\n");
+  } else if (access_mask & ACCESS_WRITE) {
+    printf("Available variables for WRITE:\n");
+  }
   for (int i=0; i<LFP_VAR_COUNT; i++) {
-    printf("\t%s\n", lifepo4wered_var_name[i]);
+    if (access_lifepo4wered(i, access_mask)) {
+      printf("\t%s\n", lifepo4wered_var_name[i]);
+    }
   }
 }
 
@@ -98,8 +106,8 @@ enum eLiFePO4weredVar get_variable(char *var) {
 /* Program entry point */
 
 int main(int argc, char *argv[]) {
-  if (argc < 3) {
-    print_help(argv[0], "Insufficient arguments");
+  if (argc < 2) {
+    print_help(argv[0], "No operation specified", ACCESS_READ|ACCESS_WRITE);
     return 1;
   }
 
@@ -108,20 +116,28 @@ int main(int argc, char *argv[]) {
   op = get_operation(argv[1], &fmt);
 
   if (op == OP_INVALID) {
-    print_help(argv[0], "Invalid operation");
+    print_help(argv[0], "Invalid operation", ACCESS_READ|ACCESS_WRITE);
     return 2;
   }
 
-  if (op == OP_WRITE && argc < 4) {
-    print_help(argv[0], "No write value specified");
+  uint8_t access_mask = (op == OP_WRITE ? ACCESS_WRITE : 0) |
+                        (op == OP_READ ? ACCESS_READ : 0);
+
+  if (argc < 3) {
+    print_help(argv[0], "No variable specified", access_mask);
     return 3;
   }
 
   enum eLiFePO4weredVar var = get_variable(argv[2]);
 
   if (var == LFP_VAR_INVALID) {
-    print_help(argv[0], "Invalid variable name");
+    print_help(argv[0], "Invalid variable name", access_mask);
     return 4;
+  }
+
+  if (op == OP_WRITE && argc < 4) {
+    print_help(argv[0], "No write value specified", 0);
+    return 5;
   }
 
   if (op == OP_READ) {
@@ -135,7 +151,7 @@ int main(int argc, char *argv[]) {
 
   if (op == OP_WRITE) {
     int32_t value = strtol(argv[3], NULL, 0);
-    write_lifepo4wered(var, value);
+    value = write_lifepo4wered(var, value);
     printf("%d\n", value);
   }
 
