@@ -24,11 +24,11 @@
   LIFEPO4WERED_VAR(TOUCH_HYSTERESIS)                \
   LIFEPO4WERED_VAR(DCO_RSEL)                        \
   LIFEPO4WERED_VAR(DCO_DCOMOD)                      \
-  LIFEPO4WERED_VAR(VIN)                             \
+  LIFEPO4WERED_VAR(VBAT)                            \
   LIFEPO4WERED_VAR(VOUT)                            \
-  LIFEPO4WERED_VAR(VIN_MIN)                         \
-  LIFEPO4WERED_VAR(VIN_SHDN)                        \
-  LIFEPO4WERED_VAR(VIN_BOOT)                        \
+  LIFEPO4WERED_VAR(VBAT_MIN)                        \
+  LIFEPO4WERED_VAR(VBAT_SHDN)                       \
+  LIFEPO4WERED_VAR(VBAT_BOOT)                       \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
