@@ -62,11 +62,20 @@ static const struct sVarDef all_vars[] = {
   /* 24: VBAT (2)         */  { 0x17,   5000,   1023,   2,  0 },
   /* 25: VOUT (2)         */  { 0x19, 554878, 102300,   2,  0 },
   /* 26: TOUCH_STATE (2)  */  { 0x1B,      1,      1,   1,  0 },
+  /* 27: VOFFSET_ADC (3)  */  { 0x10,   5000,   1023,   2,  2 },
+  /* 28: SHDN_DELAY (3)   */  { 0x12,      1,      1,   2,  2 },
+  /* 29: AUTO_BOOT (3)    */  { 0x14,      1,      1,   1,  1 },
+  /* 30: CFG_WRITE (3)    */  { 0x15,      1,      1,   1,  1 },
+  /* 31: WAKE_TIME (3)    */  { 0x16,      1,      1,   2,  2 },
+  /* 32: PI_RUNNING (3)   */  { 0x18,      1,      1,   1,  1 },
+  /* 33: VBAT (3)         */  { 0x19,   5000,   1023,   2,  0 },
+  /* 34: VOUT (3)         */  { 0x1B, 554878, 102300,   2,  0 },
+  /* 35: TOUCH_STATE (3)  */  { 0x1D,      1,      1,   1,  0 },
 };
 
 /* Number of I2C register versions defined */
 
-#define I2C_REG_VER_COUNT     2
+#define I2C_REG_VER_COUNT     3
 
 /* This table refers to the correct variable definition in the
  * table above for each register version (register version - 1
@@ -91,6 +100,7 @@ static const struct sVarDef *var_table[I2C_REG_VER_COUNT]
     /* VBAT_SHDN        */  &all_vars[9],
     /* VBAT_BOOT        */  &all_vars[10],
     /* VOUT_MAX         */  &all_vars[11],
+    /* VOFFSET_ADC      */  NULL,
     /* AUTO_BOOT        */  &all_vars[12],
     /* WAKE_TIME        */  &all_vars[14],
     /* SHDN_DELAY       */  NULL,
@@ -114,11 +124,36 @@ static const struct sVarDef *var_table[I2C_REG_VER_COUNT]
     /* VBAT_SHDN        */  &all_vars[9],
     /* VBAT_BOOT        */  &all_vars[10],
     /* VOUT_MAX         */  &all_vars[11],
+    /* VOFFSET_ADC      */  NULL,
     /* AUTO_BOOT        */  &all_vars[20],
     /* WAKE_TIME        */  &all_vars[22],
     /* SHDN_DELAY       */  &all_vars[19],
     /* PI_RUNNING       */  &all_vars[23],
     /* CFG_WRITE        */  &all_vars[21],
+  },
+  /* Register set version 3 */
+  {
+    /* I2C_REG_VER      */  &all_vars[0],
+    /* I2C_ADDRESS      */  &all_vars[1],
+    /* LED_STATE        */  &all_vars[2],
+    /* TOUCH_STATE      */  &all_vars[35],
+    /* TOUCH_CAP_CYCLES */  &all_vars[3],
+    /* TOUCH_THRESHOLD  */  &all_vars[4],
+    /* TOUCH_HYSTERESIS */  &all_vars[5],
+    /* DCO_RSEL         */  &all_vars[6],
+    /* DCO_DCOMOD       */  &all_vars[7],
+    /* VBAT             */  &all_vars[33],
+    /* VOUT             */  &all_vars[34],
+    /* VBAT_MIN         */  &all_vars[8],
+    /* VBAT_SHDN        */  &all_vars[9],
+    /* VBAT_BOOT        */  &all_vars[10],
+    /* VOUT_MAX         */  &all_vars[11],
+    /* VOFFSET_ADC      */  &all_vars[27],
+    /* AUTO_BOOT        */  &all_vars[29],
+    /* WAKE_TIME        */  &all_vars[31],
+    /* SHDN_DELAY       */  &all_vars[28],
+    /* PI_RUNNING       */  &all_vars[32],
+    /* CFG_WRITE        */  &all_vars[30],
   },
 };
 

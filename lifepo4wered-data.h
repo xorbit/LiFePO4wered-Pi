@@ -30,6 +30,7 @@
   LIFEPO4WERED_VAR(VBAT_SHDN)                       \
   LIFEPO4WERED_VAR(VBAT_BOOT)                       \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
+  LIFEPO4WERED_VAR(VOFFSET_ADC)                     \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
   LIFEPO4WERED_VAR(SHDN_DELAY)                      \
