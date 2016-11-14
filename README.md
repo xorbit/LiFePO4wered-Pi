@@ -49,7 +49,7 @@ lifepo4wered-cli
 To get the current battery voltage in millivolts, try:
 
 ```
-lifepo4wered-cli get vin
+lifepo4wered-cli get vbat
 ```
 
 To set the wake up time to an hour, run:
