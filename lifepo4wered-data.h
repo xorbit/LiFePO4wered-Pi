@@ -52,25 +52,27 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 
 /* Touch states and masks */
 
-#define TOUCH_INACTIVE      0x00
-#define TOUCH_START         0x03
-#define TOUCH_STOP          0x0C
-#define TOUCH_HELD          0x0F
-#define TOUCH_ACTIVE_MASK   0x03
-#define TOUCH_MASK          0x0F
+#define TOUCH_INACTIVE          0x00
+#define TOUCH_START             0x03
+#define TOUCH_STOP              0x0C
+#define TOUCH_HELD              0x0F
+#define TOUCH_ACTIVE_MASK       0x03
+#define TOUCH_MASK              0x0F
 
 /* LED states when Pi on */
 
-#define LED_STATE_OFF       0x00
-#define LED_STATE_ON        0x01
-#define LED_STATE_PULSING   0x02
-#define LED_STATE_FLASHING  0x03
+#define LED_STATE_OFF           0x00
+#define LED_STATE_ON            0x01
+#define LED_STATE_PULSING       0x02
+#define LED_STATE_FLASHING      0x03
 
 /* Auto boot settings */
 
-#define AUTO_BOOT_OFF       0x00
-#define AUTO_BOOT_VBAT      0x01
-#define AUTO_BOOT_VIN       0x02
+#define AUTO_BOOT_OFF           0x00
+#define AUTO_BOOT_VBAT          0x01
+#define AUTO_BOOT_VBAT_SMART    0x02
+#define AUTO_BOOT_VIN           0x03
+#define AUTO_BOOT_VIN_SMART     0x04
 
 /* Register access masks */
 
