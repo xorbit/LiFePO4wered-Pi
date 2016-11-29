@@ -20,10 +20,19 @@ const char *lifepo4wered_var_name[LFP_VAR_COUNT] = {
 };
 
 
+/* Number of I2C register versions defined */
+
+#define I2C_REG_VER_COUNT     4
+
+/* Constant to use when a register is not availabled in a particular
+ * register version */
+
+#define R_NA                  0xFF
+
 /* Structure to define variable read and write behavior */
 
 struct sVarDef {
-  uint8_t   reg;
+  uint8_t   reg[I2C_REG_VER_COUNT];
   int32_t   scale_mul;
   int32_t   scale_div;
   uint8_t   read_bytes;
@@ -34,127 +43,31 @@ struct sVarDef {
  * the set of registers available to each version is defined
  * in separate tables. */
 
-static const struct sVarDef all_vars[] = {
-  /*  0: I2C_REG_VER      */  { 0x00,      1,      1,   1,  0 },
-  /*  1: I2C_ADDRESS      */  { 0x01,      1,      1,   1,  1 },
-  /*  2: LED_STATE        */  { 0x02,      1,      1,   1,  1 },
-  /*  3: TOUCH_CAP_CYCLES */  { 0x03,      1,      1,   1,  1 },
-  /*  4: TOUCH_THRESHOLD  */  { 0x04,      1,      1,   1,  1 },
-  /*  5: TOUCH_HYSTERESIS */  { 0x05,      1,      1,   1,  1 },
-  /*  6: DCO_RSEL         */  { 0x06,      1,      1,   1,  1 },
-  /*  7: DCO_DCOMOD       */  { 0x07,      1,      1,   1,  1 },
-  /*  8: VBAT_MIN         */  { 0x08,   5000,   1023,   2,  2 },
-  /*  9: VBAT_SHDN        */  { 0x0A,   5000,   1023,   2,  2 },
-  /* 10: VBAT_BOOT        */  { 0x0C,   5000,   1023,   2,  2 },
-  /* 11: VOUT_MAX         */  { 0x0E, 554878, 102300,   2,  2 },
-  /* 12: AUTO_BOOT (1)    */  { 0x10,      1,      1,   1,  1 },
-  /* 13: CFG_WRITE (1)    */  { 0x11,      1,      1,   1,  1 },
-  /* 14: WAKE_TIME (1)    */  { 0x12,      1,      1,   2,  2 },
-  /* 15: PI_RUNNING (1)   */  { 0x14,      1,      1,   1,  1 },
-  /* 16: VBAT (1)         */  { 0x15,   5000,   1023,   2,  0 },
-  /* 17: VOUT (1)         */  { 0x17, 554878, 102300,   2,  0 },
-  /* 18: TOUCH_STATE (1)  */  { 0x19,      1,      1,   1,  0 },
-  /* 19: SHDN_DELAY (2)   */  { 0x10,      1,      1,   2,  2 },
-  /* 20: AUTO_BOOT (2)    */  { 0x12,      1,      1,   1,  1 },
-  /* 21: CFG_WRITE (2)    */  { 0x13,      1,      1,   1,  1 },
-  /* 22: WAKE_TIME (2)    */  { 0x14,      1,      1,   2,  2 },
-  /* 23: PI_RUNNING (2)   */  { 0x16,      1,      1,   1,  1 },
-  /* 24: VBAT (2)         */  { 0x17,   5000,   1023,   2,  0 },
-  /* 25: VOUT (2)         */  { 0x19, 554878, 102300,   2,  0 },
-  /* 26: TOUCH_STATE (2)  */  { 0x1B,      1,      1,   1,  0 },
-  /* 27: VOFFSET_ADC (3)  */  { 0x10,   5000,   1023,   2,  2 },
-  /* 28: SHDN_DELAY (3)   */  { 0x12,      1,      1,   2,  2 },
-  /* 29: AUTO_BOOT (3)    */  { 0x14,      1,      1,   1,  1 },
-  /* 30: CFG_WRITE (3)    */  { 0x15,      1,      1,   1,  1 },
-  /* 31: WAKE_TIME (3)    */  { 0x16,      1,      1,   2,  2 },
-  /* 32: PI_RUNNING (3)   */  { 0x18,      1,      1,   1,  1 },
-  /* 33: VBAT (3)         */  { 0x19,   5000,   1023,   2,  0 },
-  /* 34: VOUT (3)         */  { 0x1B, 554878, 102300,   2,  0 },
-  /* 35: TOUCH_STATE (3)  */  { 0x1D,      1,      1,   1,  0 },
-};
-
-/* Number of I2C register versions defined */
-
-#define I2C_REG_VER_COUNT     3
-
-/* This table refers to the correct variable definition in the
- * table above for each register version (register version - 1
- * to index) */
-
-static const struct sVarDef *var_table[I2C_REG_VER_COUNT]
-                                      [LFP_VAR_COUNT] = {
-  /* Register set version 1 */
-  {
-    /* I2C_REG_VER      */  &all_vars[0],
-    /* I2C_ADDRESS      */  &all_vars[1],
-    /* LED_STATE        */  &all_vars[2],
-    /* TOUCH_STATE      */  &all_vars[18],
-    /* TOUCH_CAP_CYCLES */  &all_vars[3],
-    /* TOUCH_THRESHOLD  */  &all_vars[4],
-    /* TOUCH_HYSTERESIS */  &all_vars[5],
-    /* DCO_RSEL         */  &all_vars[6],
-    /* DCO_DCOMOD       */  &all_vars[7],
-    /* VBAT             */  &all_vars[16],
-    /* VOUT             */  &all_vars[17],
-    /* VBAT_MIN         */  &all_vars[8],
-    /* VBAT_SHDN        */  &all_vars[9],
-    /* VBAT_BOOT        */  &all_vars[10],
-    /* VOUT_MAX         */  &all_vars[11],
-    /* VOFFSET_ADC      */  NULL,
-    /* AUTO_BOOT        */  &all_vars[12],
-    /* WAKE_TIME        */  &all_vars[14],
-    /* SHDN_DELAY       */  NULL,
-    /* PI_RUNNING       */  &all_vars[15],
-    /* CFG_WRITE        */  &all_vars[13],
-  },
-  /* Register set version 2 */
-  {
-    /* I2C_REG_VER      */  &all_vars[0],
-    /* I2C_ADDRESS      */  &all_vars[1],
-    /* LED_STATE        */  &all_vars[2],
-    /* TOUCH_STATE      */  &all_vars[26],
-    /* TOUCH_CAP_CYCLES */  &all_vars[3],
-    /* TOUCH_THRESHOLD  */  &all_vars[4],
-    /* TOUCH_HYSTERESIS */  &all_vars[5],
-    /* DCO_RSEL         */  &all_vars[6],
-    /* DCO_DCOMOD       */  &all_vars[7],
-    /* VBAT             */  &all_vars[24],
-    /* VOUT             */  &all_vars[25],
-    /* VBAT_MIN         */  &all_vars[8],
-    /* VBAT_SHDN        */  &all_vars[9],
-    /* VBAT_BOOT        */  &all_vars[10],
-    /* VOUT_MAX         */  &all_vars[11],
-    /* VOFFSET_ADC      */  NULL,
-    /* AUTO_BOOT        */  &all_vars[20],
-    /* WAKE_TIME        */  &all_vars[22],
-    /* SHDN_DELAY       */  &all_vars[19],
-    /* PI_RUNNING       */  &all_vars[23],
-    /* CFG_WRITE        */  &all_vars[21],
-  },
-  /* Register set version 3 */
-  {
-    /* I2C_REG_VER      */  &all_vars[0],
-    /* I2C_ADDRESS      */  &all_vars[1],
-    /* LED_STATE        */  &all_vars[2],
-    /* TOUCH_STATE      */  &all_vars[35],
-    /* TOUCH_CAP_CYCLES */  &all_vars[3],
-    /* TOUCH_THRESHOLD  */  &all_vars[4],
-    /* TOUCH_HYSTERESIS */  &all_vars[5],
-    /* DCO_RSEL         */  &all_vars[6],
-    /* DCO_DCOMOD       */  &all_vars[7],
-    /* VBAT             */  &all_vars[33],
-    /* VOUT             */  &all_vars[34],
-    /* VBAT_MIN         */  &all_vars[8],
-    /* VBAT_SHDN        */  &all_vars[9],
-    /* VBAT_BOOT        */  &all_vars[10],
-    /* VOUT_MAX         */  &all_vars[11],
-    /* VOFFSET_ADC      */  &all_vars[27],
-    /* AUTO_BOOT        */  &all_vars[29],
-    /* WAKE_TIME        */  &all_vars[31],
-    /* SHDN_DELAY       */  &all_vars[28],
-    /* PI_RUNNING       */  &all_vars[32],
-    /* CFG_WRITE        */  &all_vars[30],
-  },
+static const struct sVarDef var_table[] = {
+  /* I2C_REG_VER      */  { { 0x00, 0x00, 0x00, 0x00 },      1,      1,   1,  0 },
+  /* I2C_ADDRESS      */  { { 0x01, 0x01, 0x01, 0x01 },      1,      1,   1,  1 },
+  /* LED_STATE        */  { { 0x02, 0x02, 0x02, 0x02 },      1,      1,   1,  1 },
+  /* TOUCH_STATE      */  { { 0x19, 0x1B, 0x1D, 0x23 },      1,      1,   1,  0 },
+  /* TOUCH_CAP_CYCLES */  { { 0x03, 0x03, 0x03, 0x03 },      1,      1,   1,  1 },
+  /* TOUCH_THRESHOLD  */  { { 0x04, 0x04, 0x04, 0x04 },      1,      1,   1,  1 },
+  /* TOUCH_HYSTERESIS */  { { 0x05, 0x05, 0x05, 0x05 },      1,      1,   1,  1 },
+  /* DCO_RSEL         */  { { 0x06, 0x06, 0x06, 0x06 },      1,      1,   1,  1 },
+  /* DCO_DCOMOD       */  { { 0x07, 0x07, 0x07, 0x07 },      1,      1,   1,  1 },
+  /* VIN              */  { { R_NA, R_NA, R_NA, 0x21 }, 966667, 102300,   2,  0 },
+  /* VBAT             */  { { 0x15, 0x17, 0x19, 0x1D },   5000,   1023,   2,  0 },
+  /* VOUT             */  { { 0x17, 0x19, 0x1B, 0x1F }, 554878, 102300,   2,  0 },
+  /* VBAT_MIN         */  { { 0x08, 0x08, 0x08, 0x08 },   5000,   1023,   2,  2 },
+  /* VBAT_SHDN        */  { { 0x0A, 0x0A, 0x0A, 0x0A },   5000,   1023,   2,  2 },
+  /* VBAT_BOOT        */  { { 0x0C, 0x0C, 0x0C, 0x0C },   5000,   1023,   2,  2 },
+  /* VOUT_MAX         */  { { 0x0E, 0x0E, 0x0E, 0x0E }, 554878, 102300,   2,  2 },
+  /* VIN_THRESHOLD    */  { { R_NA, R_NA, R_NA, 0x10 }, 966667, 102300,   2,  2 },
+  /* VOFFSET_ADC      */  { { R_NA, R_NA, 0x10, 0x12 },   5000,   1023,   2,  2 },
+  /* AUTO_BOOT        */  { { 0x10, 0x12, 0x14, 0x18 },      1,      1,   1,  1 },
+  /* WAKE_TIME        */  { { 0x12, 0x14, 0x16, 0x1A },      1,      1,   2,  2 },
+  /* SHDN_DELAY       */  { { R_NA, 0x10, 0x12, 0x14 },      1,      1,   2,  2 },
+  /* AUTO_SHDN_TIME   */  { { R_NA, R_NA, R_NA, 0x16 },      1,      1,   2,  2 },
+  /* PI_RUNNING       */  { { 0x14, 0x16, 0x18, 0x1C },      1,      1,   1,  1 },
+  /* CFG_WRITE        */  { { 0x11, 0x13, 0x15, 0x19 },      1,      1,   1,  1 },
 };
 
 /* I2C register version detected */
@@ -181,13 +94,13 @@ static bool can_access_lifepo4wered(enum eLiFePO4weredVar var,
   if (var > I2C_REG_VER && var < LFP_VAR_COUNT &&
       i2c_reg_ver > 0 && i2c_reg_ver <= I2C_REG_VER_COUNT) {
     /* Get a pointer to the variable definition */
-    const struct sVarDef *var_def = var_table[i2c_reg_ver - 1][var];
+    const struct sVarDef *var_def = &var_table[var];
     /* Save it to the provided pointer, if one is provided */
     if (vd) {
       *vd = var_def;
     }
-    /* Is this variable defined? */
-    if (var_def) {
+    /* Is this variable defined for the register version? */
+    if (var_def->reg[i2c_reg_ver - 1] != R_NA) {
       /* Then check the access */
       return ((access_mask & ACCESS_READ) && var_def->read_bytes) ||
               ((access_mask & ACCESS_WRITE) && var_def->write_bytes);
@@ -201,7 +114,7 @@ static bool can_access_lifepo4wered(enum eLiFePO4weredVar var,
  * manner (read, write or both, external function) */
 
 bool access_lifepo4wered(enum eLiFePO4weredVar var, uint8_t access_mask) {
-  if (var == I2C_REG_VER && access_mask & ACCESS_READ) {
+  if (var == I2C_REG_VER && (access_mask & ACCESS_READ)) {
     return true;
   } else {
     return can_access_lifepo4wered(var, access_mask, NULL);
@@ -225,8 +138,8 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
           return le32toh(data.i);
         }
       } else {
-        if (read_lifepo4wered_data(var_def->reg, var_def->read_bytes,
-                                    data.b)) {
+        if (read_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
+                                  var_def->read_bytes, data.b)) {
           return (le32toh(data.i) * var_def->scale_mul
                   + var_def->scale_div / 2) / var_def->scale_div;
         }
@@ -250,8 +163,8 @@ int32_t write_lifepo4wered(enum eLiFePO4weredVar var, int32_t value) {
     data.i = htole32((value * var_def->scale_div + var_def->scale_mul / 2)
                       / var_def->scale_mul);
     for (uint8_t retries = I2C_RETRIES; retries; retries--) {
-      if (write_lifepo4wered_data(var_def->reg, var_def->write_bytes,
-                                    data.b)) {
+      if (write_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
+                                  var_def->write_bytes, data.b)) {
         return read_lifepo4wered(var);
       }
     }

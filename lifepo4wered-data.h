@@ -24,16 +24,19 @@
   LIFEPO4WERED_VAR(TOUCH_HYSTERESIS)                \
   LIFEPO4WERED_VAR(DCO_RSEL)                        \
   LIFEPO4WERED_VAR(DCO_DCOMOD)                      \
+  LIFEPO4WERED_VAR(VIN)                             \
   LIFEPO4WERED_VAR(VBAT)                            \
   LIFEPO4WERED_VAR(VOUT)                            \
   LIFEPO4WERED_VAR(VBAT_MIN)                        \
   LIFEPO4WERED_VAR(VBAT_SHDN)                       \
   LIFEPO4WERED_VAR(VBAT_BOOT)                       \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
+  LIFEPO4WERED_VAR(VIN_THRESHOLD)                   \
   LIFEPO4WERED_VAR(VOFFSET_ADC)                     \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
   LIFEPO4WERED_VAR(SHDN_DELAY)                      \
+  LIFEPO4WERED_VAR(AUTO_SHDN_TIME)                  \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
@@ -62,6 +65,12 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 #define LED_STATE_ON        0x01
 #define LED_STATE_PULSING   0x02
 #define LED_STATE_FLASHING  0x03
+
+/* Auto boot settings */
+
+#define AUTO_BOOT_OFF       0x00
+#define AUTO_BOOT_VBAT      0x01
+#define AUTO_BOOT_VIN       0x02
 
 /* Register access masks */
 
