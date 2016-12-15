@@ -7,6 +7,7 @@
  */
 
 #define _XOPEN_SOURCE
+#define _DEFAULT_SOURCE
 
 #include <unistd.h>
 #include <signal.h>
@@ -45,7 +46,8 @@ void shutdown(void) {
 
 int main(int argc, char *argv[]) {
   /* Fork and detach to run as daemon */
-  daemon(0, 0);
+  if (daemon(0, 0))
+    return 1;
 
   /* Open the syslog */
   openlog("LiFePO4wered/Pi", LOG_PID|LOG_CONS, LOG_DAEMON);
