@@ -4,10 +4,10 @@ Access library, command line tool and daemon for the LiFePO4wered/Pi module
 ## Installation
 
 Starting from a fresh Raspbian Jessie Lite image (tested with 2016-02-09 version),
-first install git:
+first install build-essential and git:
 
 ```
-sudo apt-get -y install git
+sudo apt-get -y install build-essential git
 ```
 
 In a directory where you keep source code, clone the LiFePO4wered-Pi repository
