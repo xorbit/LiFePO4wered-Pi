@@ -27,12 +27,17 @@
   LIFEPO4WERED_VAR(VIN)                             \
   LIFEPO4WERED_VAR(VBAT)                            \
   LIFEPO4WERED_VAR(VOUT)                            \
+  LIFEPO4WERED_VAR(IOUT)                            \
   LIFEPO4WERED_VAR(VBAT_MIN)                        \
   LIFEPO4WERED_VAR(VBAT_SHDN)                       \
   LIFEPO4WERED_VAR(VBAT_BOOT)                       \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
   LIFEPO4WERED_VAR(VIN_THRESHOLD)                   \
   LIFEPO4WERED_VAR(VOFFSET_ADC)                     \
+  LIFEPO4WERED_VAR(VBAT_OFFSET)                     \
+  LIFEPO4WERED_VAR(VOUT_OFFSET)                     \
+  LIFEPO4WERED_VAR(VIN_OFFSET)                      \
+  LIFEPO4WERED_VAR(IOUT_OFFSET)                     \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
   LIFEPO4WERED_VAR(SHDN_DELAY)                      \

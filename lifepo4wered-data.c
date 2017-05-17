@@ -1,6 +1,6 @@
 /* 
  * LiFePO4wered/Pi data module
- * Copyright (C) 2015 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2017 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
@@ -22,52 +22,102 @@ const char *lifepo4wered_var_name[LFP_VAR_COUNT] = {
 
 /* Number of I2C register versions defined */
 
-#define I2C_REG_VER_COUNT     4
+#define I2C_REG_VER_COUNT     5
 
 /* Constant to use when a register is not availabled in a particular
  * register version */
 
 #define R_NA                  0xFF
 
+/* Structure to define variable scale factors */
+
+struct sVarScale {
+  int32_t       mul;
+  int32_t       div;
+};
+
 /* Structure to define variable read and write behavior */
 
 struct sVarDef {
-  uint8_t   reg[I2C_REG_VER_COUNT];
-  int32_t   scale_mul;
-  int32_t   scale_div;
-  uint8_t   read_bytes;
-  uint8_t   write_bytes;
+  uint8_t       reg[I2C_REG_VER_COUNT];
+  uint8_t       read_bytes;
+  uint8_t       write_bytes;
 };
 
-/* This table covers all different I2C register versions,
- * the set of registers available to each version is defined
- * in separate tables. */
+/* This table defines scaling for all I2C registers, for different
+ * scaling variants */
+
+static const struct sVarScale var_scale[][2] = {
+  /* I2C_REG_VER      */  { {      1,      1 }, {      1,      1 } },
+  /* I2C_ADDRESS      */  { {      1,      1 }, {      1,      1 } },
+  /* LED_STATE        */  { {      1,      1 }, {      1,      1 } },
+  /* TOUCH_STATE      */  { {      1,      1 }, {      1,      1 } },
+  /* TOUCH_CAP_CYCLES */  { {      1,      1 }, {      1,      1 } },
+  /* TOUCH_THRESHOLD  */  { {      1,      1 }, {      1,      1 } },
+  /* TOUCH_HYSTERESIS */  { {      1,      1 }, {      1,      1 } },
+  /* DCO_RSEL         */  { {      1,      1 }, {      1,      1 } },
+  /* DCO_DCOMOD       */  { {      1,      1 }, {      1,      1 } },
+  /* VIN              */  { { 966667, 102300 }, { 253723,  10230 } },
+  /* VBAT             */  { {   5000,   1023 }, {   5000,   1023 } },
+  /* VOUT             */  { { 554878, 102300 }, { 525641, 102300 } },
+  /* IOUT             */  { { 581395, 102300 }, { 581395, 102300 } },
+  /* VBAT_MIN         */  { {   5000,   1023 }, {   5000,   1023 } },
+  /* VBAT_SHDN        */  { {   5000,   1023 }, {   5000,   1023 } },
+  /* VBAT_BOOT        */  { {   5000,   1023 }, {   5000,   1023 } },
+  /* VOUT_MAX         */  { { 554878, 102300 }, { 525641, 102300 } },
+  /* VIN_THRESHOLD    */  { { 966667, 102300 }, { 253723,  10230 } },
+  /* VOFFSET_ADC      */  { {   5000,   1023 }, {   5000,   1023 } },
+  /* VBAT_OFFSET      */  { {   5000,   1023 }, {   5000,   1023 } },
+  /* VOUT_OFFSET      */  { { 554878, 102300 }, { 525641, 102300 } },
+  /* VIN_OFFSET       */  { { 966667, 102300 }, { 253723,  10230 } },
+  /* IOUT_OFFSET      */  { { 581395, 102300 }, { 581395, 102300 } },
+  /* AUTO_BOOT        */  { {      1,      1 }, {      1,      1 } },
+  /* WAKE_TIME        */  { {      1,      1 }, {      1,      1 } },
+  /* SHDN_DELAY       */  { {      1,      1 }, {      1,      1 } },
+  /* AUTO_SHDN_TIME   */  { {      1,      1 }, {      1,      1 } },
+  /* PI_RUNNING       */  { {      1,      1 }, {      1,      1 } },
+  /* CFG_WRITE        */  { {      1,      1 }, {      1,      1 } },
+};
+
+/* This table covers I2C register scale variants used by each register
+ * version */
+
+static const uint8_t var_scale_variant[I2C_REG_VER_COUNT] = {
+  0, 0, 0, 0, 1
+};
+
+/* This table covers definitions of all I2C registers */
 
 static const struct sVarDef var_table[] = {
-  /* I2C_REG_VER      */  { { 0x00, 0x00, 0x00, 0x00 },      1,      1,   1,  0 },
-  /* I2C_ADDRESS      */  { { 0x01, 0x01, 0x01, 0x01 },      1,      1,   1,  1 },
-  /* LED_STATE        */  { { 0x02, 0x02, 0x02, 0x02 },      1,      1,   1,  1 },
-  /* TOUCH_STATE      */  { { 0x19, 0x1B, 0x1D, 0x23 },      1,      1,   1,  0 },
-  /* TOUCH_CAP_CYCLES */  { { 0x03, 0x03, 0x03, 0x03 },      1,      1,   1,  1 },
-  /* TOUCH_THRESHOLD  */  { { 0x04, 0x04, 0x04, 0x04 },      1,      1,   1,  1 },
-  /* TOUCH_HYSTERESIS */  { { 0x05, 0x05, 0x05, 0x05 },      1,      1,   1,  1 },
-  /* DCO_RSEL         */  { { 0x06, 0x06, 0x06, 0x06 },      1,      1,   1,  1 },
-  /* DCO_DCOMOD       */  { { 0x07, 0x07, 0x07, 0x07 },      1,      1,   1,  1 },
-  /* VIN              */  { { R_NA, R_NA, R_NA, 0x21 }, 966667, 102300,   2,  0 },
-  /* VBAT             */  { { 0x15, 0x17, 0x19, 0x1D },   5000,   1023,   2,  0 },
-  /* VOUT             */  { { 0x17, 0x19, 0x1B, 0x1F }, 554878, 102300,   2,  0 },
-  /* VBAT_MIN         */  { { 0x08, 0x08, 0x08, 0x08 },   5000,   1023,   2,  2 },
-  /* VBAT_SHDN        */  { { 0x0A, 0x0A, 0x0A, 0x0A },   5000,   1023,   2,  2 },
-  /* VBAT_BOOT        */  { { 0x0C, 0x0C, 0x0C, 0x0C },   5000,   1023,   2,  2 },
-  /* VOUT_MAX         */  { { 0x0E, 0x0E, 0x0E, 0x0E }, 554878, 102300,   2,  2 },
-  /* VIN_THRESHOLD    */  { { R_NA, R_NA, R_NA, 0x10 }, 966667, 102300,   2,  2 },
-  /* VOFFSET_ADC      */  { { R_NA, R_NA, 0x10, 0x12 },   5000,   1023,   2,  2 },
-  /* AUTO_BOOT        */  { { 0x10, 0x12, 0x14, 0x18 },      1,      1,   1,  1 },
-  /* WAKE_TIME        */  { { 0x12, 0x14, 0x16, 0x1A },      1,      1,   2,  2 },
-  /* SHDN_DELAY       */  { { R_NA, 0x10, 0x12, 0x14 },      1,      1,   2,  2 },
-  /* AUTO_SHDN_TIME   */  { { R_NA, R_NA, R_NA, 0x16 },      1,      1,   2,  2 },
-  /* PI_RUNNING       */  { { 0x14, 0x16, 0x18, 0x1C },      1,      1,   1,  1 },
-  /* CFG_WRITE        */  { { 0x11, 0x13, 0x15, 0x19 },      1,      1,   1,  1 },
+  /* I2C_REG_VER      */  { { 0x00, 0x00, 0x00, 0x00, 0x00 },  1,  0 },
+  /* I2C_ADDRESS      */  { { 0x01, 0x01, 0x01, 0x01, 0x01 },  1,  1 },
+  /* LED_STATE        */  { { 0x02, 0x02, 0x02, 0x02, 0x02 },  1,  1 },
+  /* TOUCH_STATE      */  { { 0x19, 0x1B, 0x1D, 0x23, 0x2B },  1,  0 },
+  /* TOUCH_CAP_CYCLES */  { { 0x03, 0x03, 0x03, 0x03, 0x03 },  1,  1 },
+  /* TOUCH_THRESHOLD  */  { { 0x04, 0x04, 0x04, 0x04, 0x04 },  1,  1 },
+  /* TOUCH_HYSTERESIS */  { { 0x05, 0x05, 0x05, 0x05, 0x05 },  1,  1 },
+  /* DCO_RSEL         */  { { 0x06, 0x06, 0x06, 0x06, 0x06 },  1,  1 },
+  /* DCO_DCOMOD       */  { { 0x07, 0x07, 0x07, 0x07, 0x07 },  1,  1 },
+  /* VIN              */  { { R_NA, R_NA, R_NA, 0x21, 0x27 },  2,  0 },
+  /* VBAT             */  { { 0x15, 0x17, 0x19, 0x1D, 0x23 },  2,  0 },
+  /* VOUT             */  { { 0x17, 0x19, 0x1B, 0x1F, 0x25 },  2,  0 },
+  /* IOUT             */  { { R_NA, R_NA, R_NA, R_NA, 0x29 },  2,  0 },
+  /* VBAT_MIN         */  { { 0x08, 0x08, 0x08, 0x08, 0x08 },  2,  2 },
+  /* VBAT_SHDN        */  { { 0x0A, 0x0A, 0x0A, 0x0A, 0x0A },  2,  2 },
+  /* VBAT_BOOT        */  { { 0x0C, 0x0C, 0x0C, 0x0C, 0x0C },  2,  2 },
+  /* VOUT_MAX         */  { { 0x0E, 0x0E, 0x0E, 0x0E, 0x0E },  2,  2 },
+  /* VIN_THRESHOLD    */  { { R_NA, R_NA, R_NA, 0x10, 0x10 },  2,  2 },
+  /* VOFFSET_ADC      */  { { R_NA, R_NA, 0x10, 0x12, R_NA },  2,  2 },
+  /* VBAT_OFFSET      */  { { R_NA, R_NA, R_NA, R_NA, 0x12 },  2,  2 },
+  /* VOUT_OFFSET      */  { { R_NA, R_NA, R_NA, R_NA, 0x14 },  2,  2 },
+  /* VIN_OFFSET       */  { { R_NA, R_NA, R_NA, R_NA, 0x16 },  2,  2 },
+  /* IOUT_OFFSET      */  { { R_NA, R_NA, R_NA, R_NA, 0x18 },  2,  2 },
+  /* AUTO_BOOT        */  { { 0x10, 0x12, 0x14, 0x18, 0x1E },  1,  1 },
+  /* WAKE_TIME        */  { { 0x12, 0x14, 0x16, 0x1A, 0x20 },  2,  2 },
+  /* SHDN_DELAY       */  { { R_NA, 0x10, 0x12, 0x14, 0x1A },  2,  2 },
+  /* AUTO_SHDN_TIME   */  { { R_NA, R_NA, R_NA, 0x16, 0x1C },  2,  2 },
+  /* PI_RUNNING       */  { { 0x14, 0x16, 0x18, 0x1C, 0x22 },  1,  1 },
+  /* CFG_WRITE        */  { { 0x11, 0x13, 0x15, 0x19, 0x1F },  1,  1 },
 };
 
 /* I2C register version detected */
@@ -140,8 +190,10 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
       } else {
         if (read_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
                                   var_def->read_bytes, data.b)) {
-          return (le32toh(data.i) * var_def->scale_mul
-                  + var_def->scale_div / 2) / var_def->scale_div;
+          const struct sVarScale *scale =
+                  &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
+          return (le32toh(data.i) * scale->mul + scale->div / 2)
+                  / scale->div;
         }
       }
       usleep(2000);
@@ -160,8 +212,9 @@ int32_t write_lifepo4wered(enum eLiFePO4weredVar var, int32_t value) {
       uint8_t   b[4];
       int32_t   i;
     } data;
-    data.i = htole32((value * var_def->scale_div + var_def->scale_mul / 2)
-                      / var_def->scale_mul);
+    const struct sVarScale *scale =
+          &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
+    data.i = htole32((value * scale->div + scale->mul / 2) / scale->mul);
     for (uint8_t retries = I2C_RETRIES; retries; retries--) {
       if (write_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
                                   var_def->write_bytes, data.b)) {
