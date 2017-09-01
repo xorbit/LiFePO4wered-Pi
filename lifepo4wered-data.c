@@ -4,7 +4,7 @@
  * Released under the GPL v2
  */
 
-#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <endian.h>
 #include <unistd.h>
 #include "lifepo4wered-data.h"
