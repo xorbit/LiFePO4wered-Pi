@@ -42,6 +42,8 @@
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
   LIFEPO4WERED_VAR(SHDN_DELAY)                      \
   LIFEPO4WERED_VAR(AUTO_SHDN_TIME)                  \
+  LIFEPO4WERED_VAR(PI_BOOT_TO)                      \
+  LIFEPO4WERED_VAR(PI_SHDN_TO)                      \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
@@ -81,8 +83,8 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 
 /* Register access masks */
 
-#define ACCESS_READ         0x01
-#define ACCESS_WRITE        0x02
+#define ACCESS_READ             0x01
+#define ACCESS_WRITE            0x02
 
 
 /* Determine if the specified variable can be accessed in the specified
