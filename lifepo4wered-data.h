@@ -44,6 +44,7 @@
   LIFEPO4WERED_VAR(AUTO_SHDN_TIME)                  \
   LIFEPO4WERED_VAR(PI_BOOT_TO)                      \
   LIFEPO4WERED_VAR(PI_SHDN_TO)                      \
+  LIFEPO4WERED_VAR(UNIX_TIME)                       \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
