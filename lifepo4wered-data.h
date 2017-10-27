@@ -33,6 +33,7 @@
   LIFEPO4WERED_VAR(VBAT_BOOT)                       \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
   LIFEPO4WERED_VAR(VIN_THRESHOLD)                   \
+  LIFEPO4WERED_VAR(IOUT_SHDN_THRESHOLD)             \
   LIFEPO4WERED_VAR(VOFFSET_ADC)                     \
   LIFEPO4WERED_VAR(VBAT_OFFSET)                     \
   LIFEPO4WERED_VAR(VOUT_OFFSET)                     \
@@ -45,6 +46,7 @@
   LIFEPO4WERED_VAR(PI_BOOT_TO)                      \
   LIFEPO4WERED_VAR(PI_SHDN_TO)                      \
   LIFEPO4WERED_VAR(UNIX_TIME)                       \
+  LIFEPO4WERED_VAR(ABS_WAKE_TIME)                   \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
