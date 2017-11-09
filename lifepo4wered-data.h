@@ -46,7 +46,7 @@
   LIFEPO4WERED_VAR(PI_BOOT_TO)                      \
   LIFEPO4WERED_VAR(PI_SHDN_TO)                      \
   LIFEPO4WERED_VAR(RTC_TIME)                        \
-  LIFEPO4WERED_VAR(ABS_WAKE_TIME)                   \
+  LIFEPO4WERED_VAR(RTC_WAKE_TIME)                   \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
