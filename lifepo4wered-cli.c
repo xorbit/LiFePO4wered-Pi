@@ -28,6 +28,10 @@ enum eDataFormat {
   DF_DATA
 };
 
+/* Variable not specified */
+
+#define LFP_VAR_UNSPECIFIED     (LFP_VAR_INVALID + 1)
+
 /* Print help */
 
 void print_help(char *name, char *error, uint8_t access_mask) {
@@ -113,6 +117,7 @@ int main(int argc, char *argv[]) {
 
   enum eOperation op;
   enum eDataFormat fmt;
+  enum eLiFePO4weredVar var;
   op = get_operation(argv[1], &fmt);
 
   if (op == OP_INVALID) {
@@ -124,11 +129,14 @@ int main(int argc, char *argv[]) {
                         (op == OP_READ ? ACCESS_READ : 0);
 
   if (argc < 3) {
-    print_help(argv[0], "No variable specified", access_mask);
-    return 3;
+    var = LFP_VAR_UNSPECIFIED;
+    if (op == OP_WRITE) {
+      print_help(argv[0], "No variable specified", access_mask);
+      return 3;
+    }
+  } else {
+    var = get_variable(argv[2]);
   }
-
-  enum eLiFePO4weredVar var = get_variable(argv[2]);
 
   if (var == LFP_VAR_INVALID) {
     print_help(argv[0], "Invalid variable name", access_mask);
@@ -141,11 +149,24 @@ int main(int argc, char *argv[]) {
   }
 
   if (op == OP_READ) {
-    int value = read_lifepo4wered(var);
-    if (fmt == DF_DEC) {
-      printf("%d\n", value);
+    if (var != LFP_VAR_UNSPECIFIED) {
+      int value = read_lifepo4wered(var);
+      if (fmt == DF_DEC) {
+        printf("%d\n", value);
+      } else {
+        printf("0x%04X\n", value);
+      }
     } else {
-      printf("0x%04X\n", value);
+      for (int i=0; i<LFP_VAR_COUNT; i++) {
+        if (access_lifepo4wered(i, access_mask)) {
+          int value = read_lifepo4wered(i);
+          if (fmt == DF_DEC) {
+            printf("%s = %d\n", lifepo4wered_var_name[i], value);
+          } else {
+            printf("%s = 0x%04X\n", lifepo4wered_var_name[i], value);
+          }
+        }
+      }
     }
   }
 
