@@ -136,7 +136,11 @@ static int32_t i2c_reg_ver = 0;
 
 /* I2C access retries */
 
-#define I2C_RETRIES     5
+#define I2C_RETRIES         6
+
+/* I2C identical reads requirement (minimum 2) */
+
+#define I2C_IDENTICAL_READS 3	
 
 
 /* Determine if the specified variable can be accessed in the specified
@@ -181,30 +185,43 @@ bool access_lifepo4wered(enum eLiFePO4weredVar var, uint8_t access_mask) {
   }
 }
 
-/* Read data from LiFePO4wered/Pi */
+/* Read data from LiFePO4wered/Pi
+ * Because the MSP430G micro I2C peripheral relies heavily on software
+ * support, it seems not possible to make reads work 100% reliable at
+ * 100kHz, because other interrupts that are running may cause too much
+ * latency and the first bit comes out wrong.  We fix that by requiring
+ * a number of identical reads.  This also takes care of rejecting
+ * multi-byte values that change in the middle of a read, so shadow
+ * buffering reads on the micro may not be needed anymore. */
 
 int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
   const struct sVarDef *var_def;
   if (var == I2C_REG_VER ||
       can_access_lifepo4wered(var, ACCESS_READ, &var_def)) {
+    uint8_t match_tries = 0;
     union {
       uint8_t   b[4];
       int32_t   i;
-    } data;
+    } data, match_data;
     data.i = 0;
+    match_data.i = 0;
+    uint8_t reg = var == I2C_REG_VER ?
+                  I2C_REG_VER : var_def->reg[i2c_reg_ver - 1];
+    uint8_t read_bytes = var == I2C_REG_VER ? 1 : var_def->read_bytes;
     for (uint8_t retries = I2C_RETRIES; retries; retries--) {
-      if (var == I2C_REG_VER) {
-        if (read_lifepo4wered_data(I2C_REG_VER, 1, data.b)) {
-          return le32toh(data.i);
+      if (read_lifepo4wered_data(reg, read_bytes, data.b)) {
+        if (data.i == match_data.i) {
+          if (match_tries && match_tries >= I2C_IDENTICAL_READS - 1) {
+            const struct sVarScale *scale =
+                    &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
+            return (le32toh(data.i) * scale->mul + scale->div / 2)
+                    / scale->div;
+          }
+          match_tries++;
+        } else {
+          match_tries = 0;
         }
-      } else {
-        if (read_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
-                                  var_def->read_bytes, data.b)) {
-          const struct sVarScale *scale =
-                  &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
-          return (le32toh(data.i) * scale->mul + scale->div / 2)
-                  / scale->div;
-        }
+        match_data.i = data.i;
       }
       usleep(2000);
     }
