@@ -136,11 +136,11 @@ static int32_t i2c_reg_ver = 0;
 
 /* I2C access retries */
 
-#define I2C_RETRIES         6
+#define I2C_RETRIES         8
 
 /* I2C identical reads requirement (minimum 2) */
 
-#define I2C_IDENTICAL_READS 3	
+#define I2C_IDENTICAL_READS 2
 
 
 /* Determine if the specified variable can be accessed in the specified
@@ -201,6 +201,7 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
     uint8_t match_tries = 0;
     union {
       uint8_t   b[4];
+      int16_t	h[2];
       int32_t   i;
     } data, match_data;
     data.i = 0;
@@ -214,6 +215,9 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
           if (match_tries && match_tries >= I2C_IDENTICAL_READS - 1) {
             const struct sVarScale *scale =
                     &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
+	    if (read_bytes == 2) {
+              data.i = data.h[0];
+            }
             return (le32toh(data.i) * scale->mul + scale->div / 2)
                     / scale->div;
           }
