@@ -4,6 +4,7 @@
  * Released under the GPL v2
  */
 
+#define _DEFAULT_SOURCE
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <linux/i2c.h>
@@ -47,24 +48,34 @@ bool read_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
     return false;
 
   /* Declare I2C message structures */
-  struct i2c_msg dread[2];
-  struct i2c_rdwr_ioctl_data msgset = {
-    dread,
-    2
+  struct i2c_msg dwrite, dread;
+  struct i2c_rdwr_ioctl_data msgreg = {
+    &dwrite,
+    1
+  };
+  struct i2c_rdwr_ioctl_data msgread = {
+    &dread,
+    1
   };
   /* Write register message */
-  dread[0].addr = I2C_ADDRESS;
-  dread[0].flags = 0;
-  dread[0].len = 1;
-  dread[0].buf = &reg;
+  dwrite.addr = I2C_ADDRESS;
+  dwrite.flags = 0;
+  dwrite.len = 1;
+  dwrite.buf = &reg;
   /* Read data message */
-  dread[1].addr = I2C_ADDRESS;
-  dread[1].flags = I2C_M_RD;
-  dread[1].len = count;
-  dread[1].buf = data;
+  dread.addr = I2C_ADDRESS;
+  dread.flags = I2C_M_RD;
+  dread.len = count;
+  dread.buf = data;
 
-  /* Execute the command */
-  bool result = ioctl(file, I2C_RDWR, &msgset) >= 0;
+  /* Execute the command to send the register */
+  bool result = ioctl(file, I2C_RDWR, &msgreg) >= 0;
+
+  /* Delay to ensure the micro detected STOP condition */
+  usleep(50);
+
+  /* Execute the command to read data */
+  result &= ioctl(file, I2C_RDWR, &msgread) >= 0;
 
   /* Close the I2C bus */
   close_i2c_bus(file);
@@ -83,7 +94,7 @@ bool write_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
 
   /* Declare I2C message structures */
   struct i2c_msg dwrite;
-  struct i2c_rdwr_ioctl_data msgset = {
+  struct i2c_rdwr_ioctl_data msgwrite = {
     &dwrite,
     1
   };
@@ -98,7 +109,7 @@ bool write_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
   dwrite.buf = payload;
 
   /* Execute the command */
-  bool result = ioctl(file, I2C_RDWR, &msgset) >= 0;
+  bool result = ioctl(file, I2C_RDWR, &msgwrite) >= 0;
 
   /* Close the I2C bus */
   close_i2c_bus(file);
