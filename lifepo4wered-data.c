@@ -11,15 +11,6 @@
 #include "lifepo4wered-access.h"
 
 
-/* Generate strings for variable names */
-
-#define GENERATE_STRING(STRING) #STRING,
-
-const char *lifepo4wered_var_name[LFP_VAR_COUNT] = {
-  FOREACH_LIFEPO4WERED_VAR(GENERATE_STRING)
-};
-
-
 /* Number of I2C register versions defined */
 
 #define I2C_REG_VER_COUNT     7
@@ -28,6 +19,27 @@ const char *lifepo4wered_var_name[LFP_VAR_COUNT] = {
  * register version */
 
 #define R_NA                  0xFF
+
+/* I2C access retries */
+
+#define I2C_RETRIES           20
+
+/* I2C identical reads requirement */
+
+#define I2C_IDENTICAL_READS   3
+
+/* I2C retry delay in us */
+
+#define I2C_RETRY_DELAY       500
+
+/* Generate strings for variable names */
+
+#define GENERATE_STRING(STRING) #STRING,
+
+const char *lifepo4wered_var_name[LFP_VAR_COUNT] = {
+  FOREACH_LIFEPO4WERED_VAR(GENERATE_STRING)
+};
+
 
 /* Structure to define variable scale factors */
 
@@ -135,27 +147,6 @@ static const struct sVarDef var_table[LFP_VAR_COUNT] = {
 
 static int32_t i2c_reg_ver = 0;
 
-/* I2C access retries */
-
-#define I2C_RETRIES         8
-
-/* I2C identical reads requirement (minimum 2) */
-
-#define I2C_IDENTICAL_READS 3
-
-/* I2C retry delay */
-
-static const useconds_t i2c_retry_delay[I2C_RETRIES] = {
-  300,
-  300,
-  300,
-  1000,
-  2000,
-  4000,
-  6000,
-  8000
-};
-
 
 /* Determine if the specified variable can be accessed in the specified
  * manner (read, write or both) and return a pointer to the variable
@@ -225,10 +216,13 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
     uint8_t read_bytes = var == I2C_REG_VER ? 1 : var_def->read_bytes;
     uint8_t sign_extend = var == I2C_REG_VER ? 0 : var_def->sign_extend;
     for (uint8_t retries = 0; retries < I2C_RETRIES; retries++) {
-      usleep(i2c_retry_delay[retries]);
+      usleep(500);
       if (read_lifepo4wered_data(reg, read_bytes, data.b)) {
         if (!match_tries || data.i == match_data.i) {
           if (match_tries >= I2C_IDENTICAL_READS - 1) {
+            if (var == I2C_REG_VER) {
+              return le32toh(data.i);
+            }
             const struct sVarScale *scale =
                     &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
 	    if (sign_extend) {
