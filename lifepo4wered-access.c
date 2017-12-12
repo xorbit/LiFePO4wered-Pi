@@ -1,12 +1,13 @@
 /* 
  * LiFePO4wered/Pi access module
- * Copyright (C) 2015 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2017 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
 #define _DEFAULT_SOURCE
 #include <sys/ioctl.h>
 #include <fcntl.h>
+#include <sys/file.h>
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 #include <string.h>
@@ -17,6 +18,7 @@
 
 /* LiFePO4wered/Pi access constants */
 
+#define I2C_BUS             1
 #define I2C_ADDRESS         0x43
 
 
@@ -28,13 +30,20 @@ static bool open_i2c_bus(int bus, int *file) {
   snprintf(filename, 19, "/dev/i2c-%d", bus);
   /* Open the device file */
   *file = open(filename, O_RDWR);
-  /* Report result */
-  return *file >= 0;
+  if (*file < 0) return false;
+  /* Lock access */
+  if (flock(*file, LOCK_EX|LOCK_NB) != 0) {
+    close (*file);
+    return false;
+  }
+  /* Success */
+  return true;
 }
 
 /* Close access to the specified I2C bus */
 
 static bool close_i2c_bus(int file) {
+  flock(file, LOCK_UN);
   close(file);
   return file >= 0;
 }
@@ -44,7 +53,7 @@ static bool close_i2c_bus(int file) {
 bool read_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
   /* Open the I2C bus */
   int file;
-  if (!open_i2c_bus(1, &file))
+  if (!open_i2c_bus(I2C_BUS, &file))
     return false;
 
   /* Declare I2C message structures */
@@ -72,7 +81,7 @@ bool read_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
   bool result = ioctl(file, I2C_RDWR, &msgreg) >= 0;
 
   /* Delay to ensure the micro detected STOP condition */
-  usleep(50);
+  usleep(20);
 
   /* Execute the command to read data */
   result &= ioctl(file, I2C_RDWR, &msgread) >= 0;
@@ -89,7 +98,7 @@ bool read_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
 bool write_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
   /* Open the I2C bus */
   int file;
-  if (!open_i2c_bus(1, &file))
+  if (!open_i2c_bus(I2C_BUS, &file))
     return false;
 
   /* Declare I2C message structures */
