@@ -15,6 +15,10 @@
 
 #define I2C_REG_VER_COUNT     7
 
+/* Minimum I2C register version that requires write unlock */
+
+#define I2C_WRUNLOCK_REG_VER  5
+
 /* Constant to use when a register is not availabled in a particular
  * register version */
 
@@ -247,7 +251,7 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
 
 int32_t write_lifepo4wered(enum eLiFePO4weredVar var, int32_t value) {
   const struct sVarDef *var_def;
-  if (can_access_lifepo4wered(var, ACCESS_WRITE, &var_def)) {
+  if (can_access_lifepo4wered(var, ACCESS_WRITE, &var_def) && i2c_reg_ver) {
     union {
       uint8_t   b[4];
       int32_t   i;
@@ -255,9 +259,10 @@ int32_t write_lifepo4wered(enum eLiFePO4weredVar var, int32_t value) {
     const struct sVarScale *scale =
           &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
     data.i = htole32((value * scale->div + scale->mul / 2) / scale->mul);
-    for (uint8_t retries = I2C_RETRIES; retries; retries--) {
+    for (uint8_t retries = 0; retries < I2C_RETRIES; retries++) {
       if (write_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
-                                  var_def->write_bytes, data.b)) {
+                                  var_def->write_bytes, data.b,
+                                  i2c_reg_ver >= I2C_WRUNLOCK_REG_VER)) {
         return read_lifepo4wered(var);
       }
     }
