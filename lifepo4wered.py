@@ -38,8 +38,11 @@ PI_BOOT_TO            = 28
 PI_SHDN_TO            = 29
 RTC_TIME              = 30
 RTC_WAKE_TIME         = 31
-PI_RUNNING            = 32
-CFG_WRITE             = 33
+WATCHDOG_CFG          = 32
+WATCHDOG_GRACE        = 33
+WATCHDOG_TIMER        = 34
+PI_RUNNING            = 35
+CFG_WRITE             = 36
 
 # Touch states and masks
 
@@ -64,6 +67,12 @@ AUTO_BOOT_VBAT        = 0x01
 AUTO_BOOT_VBAT_SMART  = 0x02
 AUTO_BOOT_VIN         = 0x03
 AUTO_BOOT_VIN_SMART   = 0x04
+
+# Watchdog settings
+
+WATCHDOG_OFF          = 0x00
+WATCHDOG_ALERT        = 0x01
+WATCHDOG_SHDN         = 0x02
 
 # Register access masks
 

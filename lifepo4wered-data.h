@@ -47,6 +47,9 @@
   LIFEPO4WERED_VAR(PI_SHDN_TO)                      \
   LIFEPO4WERED_VAR(RTC_TIME)                        \
   LIFEPO4WERED_VAR(RTC_WAKE_TIME)                   \
+  LIFEPO4WERED_VAR(WATCHDOG_CFG)                    \
+  LIFEPO4WERED_VAR(WATCHDOG_GRACE)                  \
+  LIFEPO4WERED_VAR(WATCHDOG_TIMER)                  \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
@@ -83,6 +86,12 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 #define AUTO_BOOT_VBAT_SMART    0x02
 #define AUTO_BOOT_VIN           0x03
 #define AUTO_BOOT_VIN_SMART     0x04
+
+/* Watchdog settings */
+
+#define WATCHDOG_OFF            0x00
+#define WATCHDOG_ALERT          0x01
+#define WATCHDOG_SHDN           0x02
 
 /* Register access masks */
 
