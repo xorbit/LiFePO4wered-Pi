@@ -17,7 +17,8 @@ bool read_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data);
 
 /* Write LiFePO4wered/Pi chip data */
 
-bool write_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data);
+bool write_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data,
+                              bool unlock);
 
 
 #endif

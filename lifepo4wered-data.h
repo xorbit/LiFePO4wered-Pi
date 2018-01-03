@@ -27,16 +27,29 @@
   LIFEPO4WERED_VAR(VIN)                             \
   LIFEPO4WERED_VAR(VBAT)                            \
   LIFEPO4WERED_VAR(VOUT)                            \
+  LIFEPO4WERED_VAR(IOUT)                            \
   LIFEPO4WERED_VAR(VBAT_MIN)                        \
   LIFEPO4WERED_VAR(VBAT_SHDN)                       \
   LIFEPO4WERED_VAR(VBAT_BOOT)                       \
   LIFEPO4WERED_VAR(VOUT_MAX)                        \
   LIFEPO4WERED_VAR(VIN_THRESHOLD)                   \
+  LIFEPO4WERED_VAR(IOUT_SHDN_THRESHOLD)             \
   LIFEPO4WERED_VAR(VOFFSET_ADC)                     \
+  LIFEPO4WERED_VAR(VBAT_OFFSET)                     \
+  LIFEPO4WERED_VAR(VOUT_OFFSET)                     \
+  LIFEPO4WERED_VAR(VIN_OFFSET)                      \
+  LIFEPO4WERED_VAR(IOUT_OFFSET)                     \
   LIFEPO4WERED_VAR(AUTO_BOOT)                       \
   LIFEPO4WERED_VAR(WAKE_TIME)                       \
   LIFEPO4WERED_VAR(SHDN_DELAY)                      \
   LIFEPO4WERED_VAR(AUTO_SHDN_TIME)                  \
+  LIFEPO4WERED_VAR(PI_BOOT_TO)                      \
+  LIFEPO4WERED_VAR(PI_SHDN_TO)                      \
+  LIFEPO4WERED_VAR(RTC_TIME)                        \
+  LIFEPO4WERED_VAR(RTC_WAKE_TIME)                   \
+  LIFEPO4WERED_VAR(WATCHDOG_CFG)                    \
+  LIFEPO4WERED_VAR(WATCHDOG_GRACE)                  \
+  LIFEPO4WERED_VAR(WATCHDOG_TIMER)                  \
   LIFEPO4WERED_VAR(PI_RUNNING)                      \
   LIFEPO4WERED_VAR(CFG_WRITE)                       \
 
@@ -74,10 +87,16 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 #define AUTO_BOOT_VIN           0x03
 #define AUTO_BOOT_VIN_SMART     0x04
 
+/* Watchdog settings */
+
+#define WATCHDOG_OFF            0x00
+#define WATCHDOG_ALERT          0x01
+#define WATCHDOG_SHDN           0x02
+
 /* Register access masks */
 
-#define ACCESS_READ         0x01
-#define ACCESS_WRITE        0x02
+#define ACCESS_READ             0x01
+#define ACCESS_WRITE            0x02
 
 
 /* Determine if the specified variable can be accessed in the specified
