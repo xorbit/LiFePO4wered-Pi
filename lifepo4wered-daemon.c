@@ -41,15 +41,17 @@ void term_handler(int signum)
 
 void set_term_handler(void) {
   struct sigaction action;
-  memset(&action, 0, sizeof(struct sigaction));
+
   action.sa_handler = term_handler;
+  sigemptyset (&action.sa_mask);
+  action.sa_flags = 0;
   sigaction(SIGTERM, &action, NULL);
 }
 
 /* Shut down the system */
 
 void shutdown(void) {
-  syslog(LOG_INFO, "LiFePO4wered module triggered shutdown");
+  syslog(LOG_INFO, "Triggering system shutdown");
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
 }
@@ -105,6 +107,8 @@ void system_time_to_rtc(void) {
 /* Main program */
 
 int main(int argc, char *argv[]) {
+  bool trigger_shutdown = false;
+
   /* Fork and detach to run as daemon */
   if (daemon(0, 0))
     return 1;
@@ -133,7 +137,8 @@ int main(int argc, char *argv[]) {
     /* Start shutdown if the LiFePO4wered/Pi running flag is reset */
     if (read_lifepo4wered(PI_RUNNING) == 0) {
       syslog(LOG_INFO, "Signal from LiFePO4wered module to shut down");
-      shutdown();
+      trigger_shutdown = true;
+      running = 0;
     }
     
     /* Sleep most of the time */
@@ -146,6 +151,10 @@ int main(int argc, char *argv[]) {
   /* Tell the LiFePO4wered/Pi we're shutting down */
   write_lifepo4wered(PI_RUNNING, 0);
   syslog(LOG_INFO, "Signaling LiFePO4wered module that system is shutting down");
+
+  /* If we need to trigger a shutdown, do it now */
+  if (trigger_shutdown)
+    shutdown();
 
   /* Close the syslog */
   closelog();
