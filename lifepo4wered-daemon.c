@@ -117,15 +117,12 @@ int main(int argc, char *argv[]) {
   openlog("LiFePO4wered", LOG_PID|LOG_CONS, LOG_DAEMON);
   syslog(LOG_INFO, "LiFePO4wered daemon started");
 
-  /* Set LiFePO4wered/Pi running flag */
-  while (read_lifepo4wered(PI_RUNNING) != 1) {
-    write_lifepo4wered(PI_RUNNING, 1);
-    sleep(1);
-  }
-  running = 1;
-
   /* Set handler for TERM signal */
   set_term_handler();
+
+  /* Set LiFePO4wered/Pi running flag */
+  write_lifepo4wered(PI_RUNNING, 1);
+  running = 1;
 
   /* If available and necessary, restore the system time from the RTC */
   system_time_from_rtc();
