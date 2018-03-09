@@ -8,8 +8,13 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <sys/file.h>
-#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
+#ifndef I2C_FUNC_I2C
+#include <linux/i2c.h>
+#define TOBUFTYPE(x) (x)
+#else
+#define TOBUFTYPE(x) ((char *)(x))
+#endif
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -67,12 +72,12 @@ bool read_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data) {
   dread[0].addr = I2C_ADDRESS;
   dread[0].flags = 0;
   dread[0].len = 1;
-  dread[0].buf = &reg;
+  dread[0].buf = TOBUFTYPE(&reg);
   /* Read data message */
   dread[1].addr = I2C_ADDRESS;
   dread[1].flags = I2C_M_RD;
   dread[1].len = count;
-  dread[1].buf = data;
+  dread[1].buf = TOBUFTYPE(data);
 
   /* Execute the command to send the register */
   bool result = ioctl(file, I2C_RDWR, &msgread) >= 0;
@@ -109,7 +114,7 @@ bool write_lifepo4wered_data(uint8_t reg, uint8_t count, uint8_t *data,
   dwrite.addr = I2C_ADDRESS;
   dwrite.flags = 0;
   dwrite.len = header_len + count;
-  dwrite.buf = payload;
+  dwrite.buf = TOBUFTYPE(payload);
 
   /* Execute the command */
   bool result = ioctl(file, I2C_RDWR, &msgwrite) >= 0;
