@@ -1,6 +1,6 @@
 /* 
  * LiFePO4wered/Pi data module
- * Copyright (C) 2015 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2018 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
@@ -86,6 +86,8 @@ extern const char *lifepo4wered_var_name[LFP_VAR_COUNT];
 #define AUTO_BOOT_VBAT_SMART    0x02
 #define AUTO_BOOT_VIN           0x03
 #define AUTO_BOOT_VIN_SMART     0x04
+#define AUTO_BOOT_NO_VIN        0x05
+#define AUTO_BOOT_NO_VIN_SMART  0x06
 
 /* Watchdog settings */
 

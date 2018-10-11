@@ -25,15 +25,6 @@ update-rc.d $DAEMON_NAME defaults
 # Restart the service
 service $DAEMON_NAME restart
 
-# Check whether the low voltage warning is not disabled yet
-if ! grep -q avoid_warnings= /boot/config.txt
-then
-  echo "" >> /boot/config.txt
-  echo "# Turn off low voltage warning" >> /boot/config.txt
-  echo "avoid_warnings=2" >> /boot/config.txt
-  echo "Turned off low voltage warning"
-fi
-
 # Check whether I2C is enabled in the device tree
 if ! grep -q ^dtparam=i2c_arm=on /boot/config.txt
 then

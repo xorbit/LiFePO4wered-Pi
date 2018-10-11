@@ -78,6 +78,8 @@ module.exports = {
   AUTO_BOOT_VBAT_SMART  : 0x02,
   AUTO_BOOT_VIN         : 0x03,
   AUTO_BOOT_VIN_SMART   : 0x04,
+  AUTO_BOOT_NO_VIN      : 0x05,
+  AUTO_BOOT_NO_VIN_SMART: 0x06,
 
   // Watchdog settings
 
