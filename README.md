@@ -75,7 +75,7 @@ The `0x46` value is a magic key to allow config flash writes.
 Adjusting some of the register values can cause problems such as not being able
 to turn on the system using the touch button.  To prevent permanently bricking
 the LiFePO4wered device, always test your changes thoroughly before writing them
-to flash.  If you made a change that makes your LiFePO4wered/Pi not work
+to flash.  If you made a change that makes your LiFePO4wered device not work
 correctly, and it is not written to flash, you can undo it by unplugging the
 LiFePO4wered device and removing the LiFePO4 cell from the battery holder for
 a couple of seconds.
