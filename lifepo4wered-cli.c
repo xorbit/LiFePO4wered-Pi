@@ -110,6 +110,8 @@ enum eLiFePO4weredVar get_variable(char *var) {
 /* Program entry point */
 
 int main(int argc, char *argv[]) {
+  int32_t value = 0;
+
   if (argc < 2) {
     print_help(argv[0], "No operation specified", ACCESS_READ|ACCESS_WRITE);
     return 1;
@@ -150,7 +152,7 @@ int main(int argc, char *argv[]) {
 
   if (op == OP_READ) {
     if (var != LFP_VAR_UNSPECIFIED) {
-      int value = read_lifepo4wered(var);
+      value = read_lifepo4wered(var);
       if (fmt == DF_DEC) {
         printf("%d\n", value);
       } else {
@@ -159,7 +161,7 @@ int main(int argc, char *argv[]) {
     } else {
       for (int i=0; i<LFP_VAR_COUNT; i++) {
         if (access_lifepo4wered(i, access_mask)) {
-          int value = read_lifepo4wered(i);
+          value = read_lifepo4wered(i);
           if (fmt == DF_DEC) {
             printf("%s = %d\n", lifepo4wered_var_name[i], value);
           } else {
@@ -171,10 +173,10 @@ int main(int argc, char *argv[]) {
   }
 
   if (op == OP_WRITE) {
-    int32_t value = strtol(argv[3], NULL, 0);
+    value = strtol(argv[3], NULL, 0);
     value = write_lifepo4wered(var, value);
     printf("%d\n", value);
   }
 
-  return 0;
+  return value == -1 || value == -2 ? 6 : 0;
 }
