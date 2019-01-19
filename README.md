@@ -39,8 +39,8 @@ That's it!  You may need to restart for some configuration changes to take effec
 
 ## CLI
 
-The `lifepo4wered-cli` tool provides convenient access to the LiFePO4wered/Pi's
-I2C registers.  Run it without parameters to get help information:
+The `lifepo4wered-cli` tool provides convenient access to the LiFePO4wered
+device's I2C registers.  Run it without parameters to get help information:
 
 ```
 lifepo4wered-cli
@@ -74,10 +74,11 @@ The `0x46` value is a magic key to allow config flash writes.
 
 Adjusting some of the register values can cause problems such as not being able
 to turn on the system using the touch button.  To prevent permanently bricking
-the LiFePO4wered/Pi, always test your changes thoroughly before writing them to
-flash.  If you made a change that makes your LiFePO4wered/Pi not work correctly,
-and it is not written to flash, you can undo it by unplugging the LiFePO4wered/Pi
-and removing the LiFePO4 cell from the battery holder for a couple of seconds.
+the LiFePO4wered device, always test your changes thoroughly before writing them
+to flash.  If you made a change that makes your LiFePO4wered/Pi not work
+correctly, and it is not written to flash, you can undo it by unplugging the
+LiFePO4wered device and removing the LiFePO4 cell from the battery holder for
+a couple of seconds.
 
 The user running the `lifepo4wered-cli` tool needs to have sufficient
 permissions to access the I2C bus.  On Raspbian, the `pi` user by default can
