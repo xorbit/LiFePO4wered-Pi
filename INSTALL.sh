@@ -8,12 +8,20 @@ SO_NAME=liblifepo4wered.so
 # Install prefix
 PREFIX=${PREFIX-/usr/local}
 
+install -d $PREFIX/lib
+install -d $PREFIX/bin
+install -d $PREFIX/sbin
+
 # Install the shared object
 install -p build/SO/$SO_NAME $PREFIX/lib
 # Install the CLI
 install -s -p build/CLI/$CLI_NAME $PREFIX/bin
 # Install the daemon
 install -s -p build/DAEMON/$DAEMON_NAME $PREFIX/sbin
+
+# exit when building packages
+if test -n "${NO_SYSTEM_INSTALL}" ; then exit ; fi
+
 # Install the init script
 install -p -T initscript /etc/init.d/$DAEMON_NAME
 
