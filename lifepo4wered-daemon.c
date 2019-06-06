@@ -50,7 +50,7 @@ void set_term_handler(void) {
 
 /* Shut down the system */
 
-void shutdown(void) {
+void shut_down(void) {
   syslog(LOG_INFO, "Triggering system shutdown");
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
 
   /* If we need to trigger a shutdown, do it now */
   if (trigger_shutdown)
-    shutdown();
+    shut_down();
 
   /* Close the syslog */
   closelog();
