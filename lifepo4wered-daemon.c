@@ -17,6 +17,9 @@
 #include <time.h>
 #include "lifepo4wered-data.h"
 
+#ifdef SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
 
 /* Time difference (s) for the system time to be updated from the RTC */
 
@@ -109,6 +112,17 @@ void system_time_to_rtc(void) {
 int main(int argc, char *argv[]) {
   bool trigger_shutdown = false;
 
+#ifdef SYSTEMD
+  struct timespec wd_sleep;
+  uint64_t watchdog_usec;
+
+  if (sd_watchdog_enabled(0, &watchdog_usec) <= 0)
+    watchdog_usec = 0;
+  else
+    watchdog_usec = watchdog_usec*2/3; // signal more often
+
+  if (sd_notify(0, "STATUS=Startup") == 0)
+#endif
   /* Fork and detach to run as daemon */
   if (daemon(0, 0))
     return 1;
@@ -127,6 +141,10 @@ int main(int argc, char *argv[]) {
   /* If available and necessary, restore the system time from the RTC */
   system_time_from_rtc();
 
+#ifdef SYSTEMD
+  sd_notify(0, "READY=1");
+#endif
+
   /* Sleep while the Pi is on, until this daemon gets a signal
    * to terminate (which might be because the LiFePO4wered/Pi
    * running flag is reset) */
@@ -139,6 +157,12 @@ int main(int argc, char *argv[]) {
     }
     
     /* Sleep most of the time */
+
+#ifdef SYSTEMD
+    if (watchdog_usec > 0)
+        usleep(watchdog_usec);
+    else
+#endif
     sleep(1);
   }
 
