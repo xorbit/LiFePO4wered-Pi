@@ -10,6 +10,9 @@ all:
 
 	test -d debian && \
 	sed "s:DAEMON_DIRECTORY:${PREFIX}/sbin:" < initscript > debian/lifepo4wered.init
+
+	test -d debian && \
+	sed "s:DAEMON_DIRECTORY:${PREFIX}/sbin:" < systemdscript > debian/lifepo4wered.service
 inst:
 	env PREFIX=${DESTDIR}/usr bash INSTALL.sh
 install:
