@@ -19,9 +19,6 @@ install -s -p build/CLI/$CLI_NAME $PREFIX/bin
 # Install the daemon
 install -s -p build/DAEMON/$DAEMON_NAME $PREFIX/sbin
 
-# exit when building packages
-if test -n "${NO_SYSTEM_INSTALL}" ; then exit ; fi
-
 # Install the init script
 if test -d /etc/init.d ; then
     sed "s:DAEMON_DIRECTORY:$PREFIX/sbin:" <initscript >/etc/init.d/$DAEMON_NAME
