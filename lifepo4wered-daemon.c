@@ -113,7 +113,6 @@ int main(int argc, char *argv[]) {
   bool trigger_shutdown = false;
 
 #ifdef SYSTEMD
-  struct timespec wd_sleep;
   uint64_t watchdog_usec;
 
   if (sd_watchdog_enabled(0, &watchdog_usec) <= 0)
