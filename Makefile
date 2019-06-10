@@ -1,4 +1,6 @@
 
+PREFIX ?= /usr
+
 help:
 	-echo "Make goals:"
 	-echo "  all     - build programs"
@@ -14,7 +16,7 @@ all:
 	test -d debian && \
 	sed "s:DAEMON_DIRECTORY:${PREFIX}/sbin:" < systemdscript > debian/lifepo4wered.service
 inst:
-	env PREFIX=${DESTDIR}/usr bash INSTALL.sh
+	env PREFIX=${PREFIX} bash INSTALL.sh
 install:
 	env PREFIX=${DESTDIR}/usr NO_SYSTEM_INSTALL=nope bash INSTALL.sh
 clean:
