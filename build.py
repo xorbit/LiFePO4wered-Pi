@@ -86,6 +86,8 @@ def check_systemd():
     SYSTEMD=True
 
 def compile(build_dir='build', target=None, flags=None):
+    if target != "SYSTEMD":
+      check_systemd()
     if target != None:
       targets = [target]
     else:
