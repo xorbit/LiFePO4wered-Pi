@@ -4,10 +4,10 @@ Access library, command line tool and daemon for the LiFePO4wered/Pi+ and legacy
 ## Installation
 
 Starting from a fresh Raspbian image, first install the `build-essential`,
-`git` and `python` packages:
+`git` and `python` packages, and the systemd support library:
 
 ```
-sudo apt-get -y install build-essential git python
+sudo apt-get -y install build-essential git python libsystemd-dev
 ```
 
 In a directory where you keep source code, clone the LiFePO4wered-Pi repository
@@ -36,6 +36,15 @@ sudo ./INSTALL.sh
 ```
 
 That's it!  You may need to restart for some configuration changes to take effect.
+
+## Daemon
+
+The installation script installs a background program
+("lifepo4wered-daemon"), along with scripts to start it. You can also start
+the daemon manually; it will continue run in the background.
+
+The daemon supports startup via systemd, including its notification
+and keepalive features. See "man systemd.service" for details.
 
 ## CLI
 

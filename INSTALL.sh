@@ -8,22 +8,34 @@ SO_NAME=liblifepo4wered.so
 # Install prefix
 PREFIX=${PREFIX-/usr/local}
 
+install -d $PREFIX/lib
+install -d $PREFIX/bin
+install -d $PREFIX/sbin
+
 # Install the shared object
 install -p build/SO/$SO_NAME $PREFIX/lib
 # Install the CLI
 install -s -p build/CLI/$CLI_NAME $PREFIX/bin
 # Install the daemon
 install -s -p build/DAEMON/$DAEMON_NAME $PREFIX/sbin
+
 # Install the init script
-install -p -T initscript /etc/init.d/$DAEMON_NAME
+if test -d /etc/init.d ; then
+    sed "s:DAEMON_DIRECTORY:$PREFIX/sbin:" <initscript >/etc/init.d/$DAEMON_NAME
 
-# Set the daemon directory in the init script
-sed -i "s:DAEMON_DIRECTORY:$PREFIX/sbin:" /etc/init.d/$DAEMON_NAME
+    # Enable the service to start on boot
+    update-rc.d $DAEMON_NAME defaults
+    # Restart the service
+    service $DAEMON_NAME restart
+fi
 
-# Enable the service to start on boot
-update-rc.d $DAEMON_NAME defaults
-# Restart the service
-service $DAEMON_NAME restart
+# Install the systemd service
+if test -d /etc/systemd/system ; then
+    sed "s:DAEMON_DIRECTORY:$PREFIX/sbin:" <systemdscript >/etc/systemd/system/$DAEMON_NAME.service
+    systemd daemon-reload
+    systemd enable $DAEMON_NAME.service
+    systemd restart $DAEMON_NAME.service
+fi
 
 # Check whether I2C is enabled in the device tree
 if ! grep -q ^dtparam=i2c_arm=on /boot/config.txt
