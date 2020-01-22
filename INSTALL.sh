@@ -32,9 +32,9 @@ fi
 # Install the systemd service
 if test -d /etc/systemd/system ; then
     sed "s:DAEMON_DIRECTORY:$PREFIX/sbin:" <systemdscript >/etc/systemd/system/$DAEMON_NAME.service
-    systemd daemon-reload
-    systemd enable $DAEMON_NAME.service
-    systemd restart $DAEMON_NAME.service
+    systemctl daemon-reload
+    systemctl enable $DAEMON_NAME.service
+    systemctl restart $DAEMON_NAME.service
 fi
 
 # Check whether I2C is enabled in the device tree
