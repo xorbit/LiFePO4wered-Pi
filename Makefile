@@ -36,7 +36,7 @@ install: all install-init-$(USE_SYSTEMD) build/modules-load.conf
 	install -D -p build/liblifepo4wered.so $(DESTDIR)$(PREFIX)/lib/liblifepo4wered.so
 	install -D -p build/lifepo4wered-cli $(DESTDIR)$(PREFIX)/bin/lifepo4wered-cli
 	install -D -p build/lifepo4wered-daemon $(DESTDIR)$(PREFIX)/sbin/lifepo4wered-daemon
-	install -D -p build/modules-load.conf $(DESTDIR)$(PREFIX)/etc/modules-load.d/lifepo4wered.conf
+	install -D -p build/modules-load.conf $(DESTDIR)/lib/modules-load.d/lifepo4wered.conf
 
 clean:
 	rm -rf build
