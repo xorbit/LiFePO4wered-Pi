@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   bool trigger_shutdown = false;
 
 #ifdef SYSTEMD
-  sd_notify(0, "STATUS=Startup");
+  if (sd_notify(0, "STATUS=Startup") == 0)
 #endif
   /* Fork and detach to run as daemon */
   if (daemon(0, 0))
