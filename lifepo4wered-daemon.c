@@ -113,14 +113,7 @@ int main(int argc, char *argv[]) {
   bool trigger_shutdown = false;
 
 #ifdef SYSTEMD
-  uint64_t watchdog_usec;
-
-  if (sd_watchdog_enabled(0, &watchdog_usec) <= 0)
-    watchdog_usec = 0;
-  else
-    watchdog_usec = watchdog_usec*2/3; // signal more often
-
-  if (sd_notify(0, "STATUS=Startup") == 0)
+  sd_notify(0, "STATUS=Startup");
 #endif
   /* Fork and detach to run as daemon */
   if (daemon(0, 0))
@@ -158,9 +151,7 @@ int main(int argc, char *argv[]) {
     /* Sleep most of the time */
 
 #ifdef SYSTEMD
-    if (watchdog_usec > 0)
-        usleep(watchdog_usec);
-    else
+    sd_notify(0, "WATCHDOG=1");
 #endif
     sleep(1);
   }
