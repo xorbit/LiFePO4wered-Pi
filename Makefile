@@ -14,7 +14,7 @@ all: build/lifepo4wered-cli build/lifepo4wered-daemon build/liblifepo4wered.so
 
 build/%.o: %.c
 	@test -d build/ || mkdir -p build/
-	$(CC) -c $(SYSTEMCFLAGS) $(CFLAGS) $< -o $@
+	$(CC) -c $(SYSTEMDCFLAGS) $(CFLAGS) $< -o $@
 build/liblifepo4wered.so: build/lifepo4wered-data.o
 	$(LD) -o $@ $^ -shared
 build/lifepo4wered-cli: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-cli.o
