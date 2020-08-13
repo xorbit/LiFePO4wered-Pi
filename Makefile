@@ -28,8 +28,8 @@ install-init-0: # sysvinit
 	install -D -p initscript $(DESTDIR)/etc/init.d/lifepo4wered-daemon
 	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)/etc/init.d/lifepo4wered-daemon
 install-init-1: install-init-0 # systemd and sysvinit
-	install -D -p systemdscript $(DESTDIR)$(PREFIX)/etc/systemd/system/lifepo4wered-daemon.service
-	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)$(PREFIX)/etc/systemd/system/lifepo4wered-daemon.service
+	install -D -p systemdscript $(DESTDIR)$(PREFIX)/lib/systemd/system/lifepo4wered-daemon.service
+	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)$(PREFIX)/lib/systemd/system/lifepo4wered-daemon.service
 build/modules-load.conf:
 	echo "i2c-dev" > build/modules-load.conf
 install: all install-init-$(USE_SYSTEMD) build/modules-load.conf
