@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
     /* Sleep most of the time */
 
 #ifdef SYSTEMD
+    sd_notify(0, "WATCHDOG=1");
     if (watchdog_usec > 0)
         usleep(watchdog_usec);
     else
