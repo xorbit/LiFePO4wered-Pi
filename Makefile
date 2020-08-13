@@ -7,6 +7,8 @@ SYSTEMDFLAGS-1 = -DSYSTEMD -lsystemd
 SYSTEMDFLAGS-0 =
 SYSTEMDFLAGS = $(SYSTEMDFLAGS-$(USE_SYSTEMD))
 
+all: build/lifepo4wered-cli build/lifepo4wered-daemon build/liblifepo4wered.so
+
 build/%.o: %.c
 	@test -d build/ || mkdir -p build/
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -21,7 +23,6 @@ help:
 	@echo "  all     - build programs"
 	@echo "  install - install programs to $$DESTDIR$$PREFIX"
 	@echo "  clean   - delete generated files"
-all: build/lifepo4wered-cli build/lifepo4wered-daemon build/liblifepo4wered.so
 
 install-init-0: # sysvinit
 	install -D -p initscript $(DESTDIR)$(PREFIX)/etc/init.d/lifepo4wered-daemon
