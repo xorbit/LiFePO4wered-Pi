@@ -7,7 +7,7 @@ Type=notify
 ExecStart=DAEMON_DIRECTORY/lifepo4wered-daemon
 Restart=always
 RestartSec=10
-WatchdogSec=1
+WatchdogSec=5
 
 [Install]
 WantedBy=sysinit.target
