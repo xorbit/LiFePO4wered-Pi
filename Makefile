@@ -3,21 +3,24 @@ CC ?= gcc
 LD ?= ld
 CFLAGS ?= -std=c99 -Wall -O2
 USE_SYSTEMD ?= 1
-SYSTEMDFLAGS-1 = -DSYSTEMD -lsystemd
-SYSTEMDFLAGS-0 =
-SYSTEMDFLAGS = $(SYSTEMDFLAGS-$(USE_SYSTEMD))
+SYSTEMDCFLAGS-1 = -DSYSTEMD
+SYSTEMDCFLAGS-0 =
+SYSTEMDCFLAGS = $(SYSTEMDCFLAGS-$(USE_SYSTEMD))
+SYSTEMDLDFLAGS-1 = -lsystemd
+SYSTEMDLDFLAGS-0 =
+SYSTEMDLDFLAGS = $(SYSTEMDLDFLAGS-$(USE_SYSTEMD))
 
 all: build/lifepo4wered-cli build/lifepo4wered-daemon build/liblifepo4wered.so
 
 build/%.o: %.c
 	@test -d build/ || mkdir -p build/
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(SYSTEMCFLAGS) $(CFLAGS) $< -o $@
 build/liblifepo4wered.so: build/lifepo4wered-data.o
 	$(LD) -o $@ $^ -shared
 build/lifepo4wered-cli: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-cli.o
-	$(CC) -o $@ $(SYSTEMDFLAGS) $^
-build/lifepo4wered-daemon: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-daemon.o
 	$(CC) -o $@ $^
+build/lifepo4wered-daemon: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-daemon.o
+	$(CC) -o $@ $(SYSTEMDLDFLAGS) $^
 help:
 	@echo "Make goals:"
 	@echo "  all     - build programs"
