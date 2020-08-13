@@ -25,8 +25,8 @@ help:
 	@echo "  clean   - delete generated files"
 
 install-init-0: # sysvinit
-	install -D -p initscript $(DESTDIR)$(PREFIX)/etc/init.d/lifepo4wered-daemon
-	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)$(PREFIX)/etc/init.d/lifepo4wered-daemon
+	install -D -p initscript $(DESTDIR)/etc/init.d/lifepo4wered-daemon
+	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)/etc/init.d/lifepo4wered-daemon
 install-init-1: install-init-0 # systemd and sysvinit
 	install -D -p systemdscript $(DESTDIR)$(PREFIX)/etc/systemd/system/lifepo4wered-daemon.service
 	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)$(PREFIX)/etc/systemd/system/lifepo4wered-daemon.service
