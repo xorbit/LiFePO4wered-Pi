@@ -26,7 +26,7 @@ cd LiFePO4wered-Pi/
 Build the code:
 
 ```
-./build.py
+make all
 ```
 
 And install it:
