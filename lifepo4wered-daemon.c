@@ -33,6 +33,9 @@
 
 volatile sig_atomic_t running;
 
+/* Running in foreground flag */
+bool foreground = false;
+
 /* TERM signal handler */
 
 void term_handler(int signum)
@@ -115,8 +118,12 @@ int main(int argc, char *argv[]) {
 #ifdef SYSTEMD
   if (sd_notify(0, "STATUS=Startup") == 0)
 #endif
-  /* Fork and detach to run as daemon */
-  if (daemon(0, 0))
+
+  /* Run in foreground if -f flag is passed */
+  if (argc == 2 && strcmp(argv[1], "-f") == 0)
+    foreground = true;
+  /* Otherwise fork and detach to run as daemon */
+  else if (daemon(0, 0))
     return 1;
 
   /* Open the syslog */
