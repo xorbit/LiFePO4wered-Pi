@@ -31,8 +31,8 @@ then
 fi
 
 # Load the I2C module
-echo "Booting I2C device module"
-echo "You need to reboot for this to take effect!"
+echo "Loading I2C device module"
+echo "You may need to reboot for this to take effect!"
 modprobe i2c-dev
 
 # Check whether the UART is enabled in the device tree
