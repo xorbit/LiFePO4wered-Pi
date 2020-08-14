@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   bool trigger_shutdown = false;
 
 #ifdef SYSTEMD
-  if (sd_notify(0, "STATUS=Startup") == 0)
+  if (sd_notify(0, "READY=1") == 0)
 #endif
   /* Fork and detach to run as daemon */
   if (daemon(0, 0))
@@ -152,6 +152,8 @@ int main(int argc, char *argv[]) {
 
 #ifdef SYSTEMD
     sd_notify(0, "WATCHDOG=1");
+    if (!running)
+      sd_notify(0, "STOPPING=1");
 #endif
     sleep(1);
   }
