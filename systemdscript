@@ -1,5 +1,5 @@
 [Unit]
-Description=Daemon for lifepo4wered Pi hat
+Description=Daemon for LiFePO4wered power manager
 
 [Service]
 Type=notify

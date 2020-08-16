@@ -2,7 +2,7 @@
  * LiFePO4wered/Pi daemon: communicate with LiFePO4wered/Pi to provide
  * proper boot and shutdown behavior
  *
- * Copyright (C) 2015-2017 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2020 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
@@ -127,15 +127,17 @@ int main(int argc, char *argv[]) {
   bool trigger_shutdown = false;
 
 #ifdef SYSTEMD
-  if (sd_notify(0, "STATUS=Startup") == 0)
+  if (sd_notify(0, "STATUS=Startup") == 0) {
 #endif
-
   /* Run in foreground if -f flag is passed */
   if (argc == 2 && strcmp(argv[1], "-f") == 0)
     foreground = true;
   /* Otherwise fork and detach to run as daemon */
   else if (daemon(0, 0))
     return 1;
+#ifdef SYSTEMD
+  }
+#endif
 
   /* Open the syslog if we need to */
   if (!foreground)
@@ -155,6 +157,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef SYSTEMD
   sd_notify(0, "READY=1");
+  sd_notify(0, "STATUS=Active");
 #endif
 
   /* Sleep while the Pi is on, until this daemon gets a signal
@@ -179,13 +182,16 @@ int main(int argc, char *argv[]) {
   /* If available, save the system time to the RTC */
   system_time_to_rtc();
 
-  /* Tell the LiFePO4wered/Pi we're shutting down */
-  write_lifepo4wered(PI_RUNNING, 0);
-  log_info("Signaling LiFePO4wered module that system is shutting down");
-
-  /* If we need to trigger a shutdown, do it now */
-  if (trigger_shutdown)
+  /* Do we need to trigger system shutdown?
+   * (The LiFePO4wered/Pi triggered it) */
+  if (trigger_shutdown) {
+    /* Then trigger a system shutdown */
     shut_down();
+  } else {
+    /* Otherwise tell the LiFePO4wered/Pi we're shutting down */
+    write_lifepo4wered(PI_RUNNING, 0);
+    log_info("Signaling LiFePO4wered module that system is shutting down");
+  }
 
   /* Close the syslog */
   closelog();
