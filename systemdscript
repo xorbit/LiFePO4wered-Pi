@@ -3,8 +3,7 @@ Description=Daemon for lifepo4wered Pi hat
 
 [Service]
 Type=notify
-#NotifyAccess=main
-ExecStart=DAEMON_DIRECTORY/lifepo4wered-daemon
+ExecStart=DAEMON_DIRECTORY/lifepo4wered-daemon -f
 Restart=always
 RestartSec=10
 WatchdogSec=5

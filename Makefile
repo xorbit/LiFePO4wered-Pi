@@ -1,17 +1,45 @@
+PREFIX ?= /usr/local
+CC ?= gcc
+LD ?= ld
+CFLAGS ?= -std=c99 -Wall -O2
+USE_SYSTEMD ?= 1
+SYSTEMDCFLAGS-1 = -DSYSTEMD
+SYSTEMDCFLAGS-0 =
+SYSTEMDCFLAGS = $(SYSTEMDCFLAGS-$(USE_SYSTEMD))
+SYSTEMDLDFLAGS-1 = -lsystemd
+SYSTEMDLDFLAGS-0 =
+SYSTEMDLDFLAGS = $(SYSTEMDLDFLAGS-$(USE_SYSTEMD))
 
-PREFIX ?= /usr
+all: build/lifepo4wered-cli build/lifepo4wered-daemon build/liblifepo4wered.so
 
+build/%.o: %.c
+	@test -d build/ || mkdir -p build/
+	$(CC) -c $(SYSTEMDCFLAGS) $(CFLAGS) $< -o $@
+build/liblifepo4wered.so: build/lifepo4wered-data.o
+	$(LD) -o $@ $^ -shared
+build/lifepo4wered-cli: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-cli.o
+	$(CC) -o $@ $^
+build/lifepo4wered-daemon: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-daemon.o
+	$(CC) -o $@ $(SYSTEMDLDFLAGS) $^
 help:
-	-echo "Make goals:"
-	-echo "  all     - build programs"
-	-echo "  install - install programs to $$PREFIX"
-	-echo "  inst    - install programs and update system"
-	-echo "  clean   - delete generated files"
-all:
-	python3 build.py
+	@echo "Make goals:"
+	@echo "  all     - build programs"
+	@echo "  install - install programs to $$DESTDIR$$PREFIX"
+	@echo "  clean   - delete generated files"
 
-install:
-	env PREFIX=${PREFIX} NO_SYSTEM_INSTALL=nope bash INSTALL.sh
+install-init-0: # sysvinit
+	install -D -p initscript $(DESTDIR)/etc/init.d/lifepo4wered-daemon
+	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)/etc/init.d/lifepo4wered-daemon
+install-init-1: install-init-0 # systemd and sysvinit
+	install -D -p systemdscript $(DESTDIR)$(PREFIX)/lib/systemd/system/lifepo4wered-daemon.service
+	sed -i "s:DAEMON_DIRECTORY:$(PREFIX)/sbin:" $(DESTDIR)$(PREFIX)/lib/systemd/system/lifepo4wered-daemon.service
+build/modules-load.conf:
+	echo "i2c-dev" > build/modules-load.conf
+install: all install-init-$(USE_SYSTEMD) build/modules-load.conf
+	install -D -p build/liblifepo4wered.so $(DESTDIR)$(PREFIX)/lib/liblifepo4wered.so
+	install -D -p build/lifepo4wered-cli $(DESTDIR)$(PREFIX)/bin/lifepo4wered-cli
+	install -D -p build/lifepo4wered-daemon $(DESTDIR)$(PREFIX)/sbin/lifepo4wered-daemon
+	install -D -p build/modules-load.conf $(DESTDIR)/lib/modules-load.d/lifepo4wered.conf
+
 clean:
 	rm -rf build
-	-rm -f debian/lifepo4wered.init

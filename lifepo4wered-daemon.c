@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <string.h>
 #include <syslog.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "lifepo4wered-data.h"
@@ -32,6 +33,18 @@
 /* Running flag */
 
 volatile sig_atomic_t running;
+
+/* Running in foreground flag */
+bool foreground = false;
+
+#define log_info(args...) do { \
+  if (foreground) {\
+    fprintf(stdout, args); \
+    fprintf(stdout, "\n"); \
+    fflush(stdout); \
+  } else \
+    syslog(LOG_INFO, args); \
+} while (0)
 
 /* TERM signal handler */
 
@@ -54,7 +67,7 @@ void set_term_handler(void) {
 /* Shut down the system */
 
 void shut_down(void) {
-  syslog(LOG_INFO, "Triggering system shutdown");
+  log_info("Triggering system shutdown");
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
 }
@@ -82,7 +95,7 @@ void system_time_from_rtc(void) {
     /* Set the system time to the RTC time */
     clock_settime(CLOCK_REALTIME, &new_ts);
     /* Log message */
-    syslog(LOG_INFO, "System time restored from RTC: %li", new_ts.tv_sec);
+    log_info("System time restored from RTC: %li", new_ts.tv_sec);
   }
 }
 
@@ -105,7 +118,7 @@ void system_time_to_rtc(void) {
   /* Save the system time to the RTC */
   write_lifepo4wered(RTC_TIME, (int32_t)now_time);
   /* Log message */
-  syslog(LOG_INFO, "System time saved to RTC: %d", (int32_t)now_time);
+  log_info("System time saved to RTC: %d", (int32_t)now_time);
 }
 
 /* Main program */
@@ -116,13 +129,19 @@ int main(int argc, char *argv[]) {
 #ifdef SYSTEMD
   if (sd_notify(0, "STATUS=Startup") == 0)
 #endif
-  /* Fork and detach to run as daemon */
-  if (daemon(0, 0))
+
+  /* Run in foreground if -f flag is passed */
+  if (argc == 2 && strcmp(argv[1], "-f") == 0)
+    foreground = true;
+  /* Otherwise fork and detach to run as daemon */
+  else if (daemon(0, 0))
     return 1;
 
-  /* Open the syslog */
-  openlog("LiFePO4wered", LOG_PID|LOG_CONS, LOG_DAEMON);
-  syslog(LOG_INFO, "LiFePO4wered daemon started");
+  /* Open the syslog if we need to */
+  if (!foreground)
+    openlog("LiFePO4wered", LOG_PID|LOG_CONS, LOG_DAEMON);
+
+  log_info("LiFePO4wered daemon started");
 
   /* Set handler for TERM signal */
   set_term_handler();
@@ -144,7 +163,7 @@ int main(int argc, char *argv[]) {
   while (running) {
     /* Start shutdown if the LiFePO4wered/Pi running flag is reset */
     if (read_lifepo4wered(PI_RUNNING) == 0) {
-      syslog(LOG_INFO, "Signal from LiFePO4wered module to shut down");
+      log_info("Signal from LiFePO4wered module to shut down");
       trigger_shutdown = true;
       running = 0;
     }
@@ -162,7 +181,7 @@ int main(int argc, char *argv[]) {
 
   /* Tell the LiFePO4wered/Pi we're shutting down */
   write_lifepo4wered(PI_RUNNING, 0);
-  syslog(LOG_INFO, "Signaling LiFePO4wered module that system is shutting down");
+  log_info("Signaling LiFePO4wered module that system is shutting down");
 
   /* If we need to trigger a shutdown, do it now */
   if (trigger_shutdown)
