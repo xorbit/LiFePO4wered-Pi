@@ -83,18 +83,19 @@ void system_time_from_rtc(void) {
   /* Is the time different enough? */
   if (abs(read_lifepo4wered(RTC_TIME) - (int32_t)time(NULL)) >= RTC_SET_DIFF) {
     /* Wait until the RTC time changes */
+    struct timespec new_ts = {0};
     struct timespec ts;
     ts.tv_sec = 0;
     ts.tv_nsec = RTC_CHECK_DELAY;
-    int32_t now_time, start_time = read_lifepo4wered(RTC_TIME);
+    int32_t start_time = read_lifepo4wered(RTC_TIME);
     do {
       nanosleep(&ts, NULL);
-      now_time = read_lifepo4wered(RTC_TIME);
-    } while(now_time == start_time);
+      new_ts.tv_sec = read_lifepo4wered(RTC_TIME);
+    } while(new_ts.tv_sec == start_time);
     /* Set the system time to the RTC time */
-    stime((time_t *)&now_time);
+    clock_settime(CLOCK_REALTIME, &new_ts);
     /* Log message */
-    log_info("System time restored from RTC: %d", now_time);
+    log_info("System time restored from RTC: %li", new_ts.tv_sec);
   }
 }
 
