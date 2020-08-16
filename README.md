@@ -4,10 +4,10 @@ Access library, command line tool and daemon for the LiFePO4wered/Pi+ and legacy
 ## Installation
 
 Starting from a fresh Raspbian image, first install the `build-essential`,
-`git` and `python` packages, and the systemd support library:
+`git` and and the systemd support library:
 
 ```
-sudo apt-get -y install build-essential git python libsystemd-dev
+sudo apt-get -y install build-essential git libsystemd-dev
 ```
 
 In a directory where you keep source code, clone the LiFePO4wered-Pi repository
@@ -26,7 +26,7 @@ cd LiFePO4wered-Pi/
 Build the code:
 
 ```
-./build.py
+make all
 ```
 
 And install it:
