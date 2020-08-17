@@ -176,6 +176,11 @@ int main(int argc, char *argv[]) {
     sleep(1);
   }
 
+#ifdef SYSTEMD
+  sd_notify(0, "STOPPING=1");
+  sd_notify(0, "STATUS=Shutdown");
+#endif
+
   /* If available, save the system time to the RTC */
   system_time_to_rtc();
 
