@@ -32,7 +32,7 @@ make all
 And install it:
 
 ```
-sudo ./INSTALL.sh
+sudo make user-install
 ```
 
 That's it!  You may need to restart for some configuration changes to take effect.
