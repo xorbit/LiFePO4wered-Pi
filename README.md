@@ -110,6 +110,9 @@ LiFePO<sub>4</sub>wered device and removing the LiFePO4 cell from the battery ho
 a couple of minutes.  The LiFePO<sub>4</sub>wered device should revert to its previous
 last saved state when you put the battery back.
 
+Check out the product brief for the
+[LiFePO<sub>4</sub>wered/Pi+](https://lifepo4wered.com/files/LiFePO4wered-Pi+-Product-Brief.pdf) or legacy [LiFePO<sub>4</sub>wered/Pi](http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf) or [LiFePO<sub>4</sub>wered/Pi3](http://lifepo4wered.com/files/LiFePO4wered-Pi3-Product-Brief.pdf) devices for a complete list of registers and options available in each product.  Alternatively, running `lifepo4wered-cli get` returns a dump with all valid registers for a device.
+
 ## Permissions
 
 The user running the `lifepo4wered-cli` tool needs to have sufficient
@@ -131,5 +134,3 @@ conditions:
 | -1 | Could not access the LiFePO<sub>4</sub>wered device to perform the specified operation.  Usually this condition is caused by insufficient privileges when trying to access the I<sup>2</sup>C bus.  Trying to run the command as root or with `sudo` to fix the problem.  When writing settings, this value is also returned if a register is not writable. |
 | -2 | The I<sup>2</sup>C bus could be accessed and the operation is valid, but communication with the LiFePO<sub>4</sub>wered device failed.  After trying several times (20 by default), the I<sup>2</sup>C bus transaction could not be completed successfully.  This happens if the LiFePO<sub>4</sub>wered device is not physically present or if something (possibly another HAT) is preventing the I<sup>2</sup>C bus from operating correctly. |
 
-Check out the product brief for the
-[LiFePO<sub>4</sub>wered/Pi+](https://lifepo4wered.com/files/LiFePO4wered-Pi+-Product-Brief.pdf) or legacy [LiFePO<sub>4</sub>wered/Pi](http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf)or [LiFePO<sub>4</sub>wered/Pi3](http://lifepo4wered.com/files/LiFePO4wered-Pi3-Product-Brief.pdf) devices for a complete list of registers and options available in each product.
