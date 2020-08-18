@@ -4,7 +4,7 @@ Access library, command line tool and daemon for the LiFePO4wered/Pi+ and legacy
 ## Installation
 
 Starting from a fresh Raspbian image, first install the `build-essential`,
-`git` and and the systemd support library:
+`git` and the `systemd support library` packages:
 
 ```
 sudo apt-get -y install build-essential git libsystemd-dev
@@ -35,16 +35,30 @@ And install it:
 sudo make user-install
 ```
 
-That's it!  You may need to restart for some configuration changes to take effect.
+That's it!  You may need to restart for some configuration changes (such as enabling the I2C device) to take effect.
+
+## Legacy build scripts
+
+The build and install commands were changed from what they originally were.
+To prevent confusion for people not reading this but following installation
+instructions in older manuals, `build.py` and `INSTALL.sh` are provided that
+just call the make commands above for legacy compatibility.
 
 ## Daemon
 
-The installation script installs a background program
+The installation command installs a background program
 ("lifepo4wered-daemon"), along with scripts to start it. You can also start
-the daemon manually; it will continue run in the background.
+the daemon manually, it will continue run in the background.
 
-The daemon supports startup via systemd, including its notification
-and keepalive features. See "man systemd.service" for details.
+The daemon supports startup via `systemd`, including its notification
+and keepalive features. See `man systemd.service` for details.
+
+If you do not want to include `systemd` support in the daemon, you can build
+the code with:
+
+```
+make all USE_SYSTEMD=0
+```
 
 ## CLI
 
@@ -53,6 +67,12 @@ device's I2C registers.  Run it without parameters to get help information:
 
 ```
 lifepo4wered-cli
+```
+
+To get a full dump of all register values, try:
+
+```
+lifepo4wered-cli get
 ```
 
 To get the current battery voltage in millivolts, try:
@@ -67,10 +87,10 @@ To set the wake up time to an hour, run:
 lifepo4wered-cli set wake_time 60
 ```
 
-To set the auto-boot flag to make the Pi run whenever there is power to do so, run:
+To set the auto-boot flag to make the Pi run whenever there is power to do so, but still be able to turn the Pi off with the button or from software, run:
 
 ```
-lifepo4wered-cli set auto_boot 1
+lifepo4wered-cli set auto_boot 2
 ```
 
 To make this change permanent by saving it to flash, run:
@@ -87,10 +107,11 @@ the LiFePO4wered device, always test your changes thoroughly before writing them
 to flash.  If you made a change that makes your LiFePO4wered device not work
 correctly, and it is not written to flash, you can undo it by unplugging the
 LiFePO4wered device and removing the LiFePO4 cell from the battery holder for
-a couple of seconds.
+a couple of minutes.  The LiFePO4wered device should revert to its previous
+last saved state when you put the battery back.
 
 The user running the `lifepo4wered-cli` tool needs to have sufficient
-permissions to access the I2C bus.  On Raspbian, the `pi` user by default can
+privileges to access the I2C bus.  On Raspbian, the `pi` user by default can
 access the bus because it is in the `i2c` group.  If you run as a different
 user, you either need to add this user to the `i2c` group or run the tool with
 `sudo`.  On other distributions, a different group name may be used.  You can
