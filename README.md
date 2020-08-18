@@ -106,12 +106,12 @@ to turn on the system using the touch button.  To prevent permanently bricking
 the LiFePO<sub>4</sub>wered device, always test your changes thoroughly before writing them
 to flash.  If you made a change that makes your LiFePO<sub>4</sub>wered device not work
 correctly, and it is not written to flash, you can undo it by unplugging the
-LiFePO<sub>4</sub>wered device and removing the LiFePO4 cell from the battery holder for
+LiFePO<sub>4</sub>wered device and removing the LiFePO<sub>4</sub> cell from the battery holder for
 a couple of minutes.  The LiFePO<sub>4</sub>wered device should revert to its previous
 last saved state when you put the battery back.
 
 Check out the product brief for the
-[LiFePO<sub>4</sub>wered/Pi+](https://lifepo4wered.com/files/LiFePO4wered-Pi+-Product-Brief.pdf) or legacy [LiFePO<sub>4</sub>wered/Pi](http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf) or [LiFePO<sub>4</sub>wered/Pi3](http://lifepo4wered.com/files/LiFePO4wered-Pi3-Product-Brief.pdf) devices for a complete list of registers and options available in each product.  Alternatively, running `lifepo4wered-cli get` returns a dump with all valid registers for a device.
+[LiFePO<sub>4</sub>wered/Pi+](https://lifepo4wered.com/files/LiFePO4wered-Pi+-Product-Brief.pdf) or legacy [LiFePO<sub>4</sub>wered/Pi](http://lifepo4wered.com/files/LiFePO4wered-Pi-Product-Brief.pdf) or [LiFePO<sub>4</sub>wered/Pi3](http://lifepo4wered.com/files/LiFePO4wered-Pi3-Product-Brief.pdf) devices for a complete list of registers and valid values and options available in each product.  Alternatively, running `lifepo4wered-cli get` returns a dump with all valid registers for the connected device.
 
 ## Permissions
 
