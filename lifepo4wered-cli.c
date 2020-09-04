@@ -1,6 +1,6 @@
 /* 
  * LiFePO4wered/Pi variable read/write command line tool
- * Copyright (C) 2015 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2020 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 

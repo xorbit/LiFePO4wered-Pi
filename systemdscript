@@ -1,0 +1,12 @@
+[Unit]
+Description=Daemon for LiFePO4wered power manager
+
+[Service]
+Type=notify
+ExecStart=DAEMON_DIRECTORY/lifepo4wered-daemon -f
+Restart=always
+RestartSec=10
+WatchdogSec=5
+
+[Install]
+WantedBy=sysinit.target

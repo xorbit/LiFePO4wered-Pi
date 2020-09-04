@@ -1,6 +1,6 @@
 /* 
  * LiFePO4wered/Pi access module
- * Copyright (C) 2015-2017 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2020 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
