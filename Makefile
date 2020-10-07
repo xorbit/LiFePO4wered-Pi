@@ -20,7 +20,7 @@ build/liblifepo4wered.so: build/lifepo4wered-data.o
 build/lifepo4wered-cli: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-cli.o
 	$(CC) -o $@ $^
 build/lifepo4wered-daemon: build/lifepo4wered-access.o build/lifepo4wered-data.o build/lifepo4wered-daemon.o
-	$(CC) -o $@ $(SYSTEMDLDFLAGS) $^
+	$(CC) -o $@ $^ $(SYSTEMDLDFLAGS) 
 help:
 	@echo "Make goals:"
 	@echo "  all     - build programs"
