@@ -138,12 +138,14 @@ conditions:
 
 The included `Dockerfile` can be used to compile the daemon as a [Balena](https://www.balena.io/) compatible service.  Typically this would be used in a multicontainer setup where the LiFePO<sub>4</sub>wered service would be separate from your application container(s).  The `Dockerfile` uses the `USE_BALENA=1` `make` parameter to alter the shutdown command to send a shutdown request to the Balena supervisor container and runs the daemon code in foreground mode using the `-f` flag.
 
-A `docker-compose.yml` file such as the one below should be created to include the LiFePO<sub>4</sub>wered service, make it privileged, and give it access to the supervisor API:
+The included `Dockerfile` uses a 64-bit Raspberry Pi 4 base image, if you are using a different Pi or 32-bit Balena base OS, you need to alter the base image in both ("build" and "run") `FROM` lines.
+
+A `docker-compose.yml` file such as the one below should be created to include the LiFePO<sub>4</sub>wered service in your application, make it privileged (to access the I<sup>2</sup>C bus and set system time), and give it access to the supervisor API:
 
 ```yaml
 version: '2'
 services:
-  your-application:
+  your-own-application-service:
     build: ./balena-node-hello-world
     ports:
       - "80:80"
@@ -154,5 +156,5 @@ services:
       io.balena.features.supervisor-api: '1'
 ```
 
-If your application needs access to the LiFePO<sub>4</sub>wered device, the easiest approach may be to include the `lifepo4wered-cli` or `liblifepo4wered.so` with language bindings in your application's container, building it using the multistage approach demonstrated in our `Dockerfile`.
+If your application needs access to the LiFePO<sub>4</sub>wered device, the easiest approach may be to include the `lifepo4wered-cli` or `liblifepo4wered.so` with language bindings in your application's container, building it using the multistage approach demonstrated in our `Dockerfile`.  Make sure you then also give your own application access to the I<sup>2</sup>C bus.
 
