@@ -134,3 +134,25 @@ conditions:
 | -1 | Could not access the LiFePO<sub>4</sub>wered device to perform the specified operation.  Usually this condition is caused by insufficient privileges when trying to access the I<sup>2</sup>C bus.  Trying to run the command as root or with `sudo` to fix the problem.  When writing settings, this value is also returned if a register is not writable. |
 | -2 | The I<sup>2</sup>C bus could be accessed and the operation is valid, but communication with the LiFePO<sub>4</sub>wered device failed.  After trying several times (20 by default), the I<sup>2</sup>C bus transaction could not be completed successfully.  This happens if the LiFePO<sub>4</sub>wered device is not physically present or if something (possibly another HAT) is preventing the I<sup>2</sup>C bus from operating correctly. |
 
+## Balena
+
+The included `Dockerfile` can be used to compile the daemon as a [Balena](https://www.balena.io/) compatible service.  Typically this would be used in a multicontainer setup where the LiFePO<sub>4</sub>wered service would be separate from your application container(s).  The `Dockerfile` uses the `USE_BALENA=1` `make` parameter to alter the shutdown command to send a shutdown request to the Balena supervisor container and runs the daemon code in foreground mode using the `-f` flag.
+
+A `docker-compose.yml` file such as the one below should be created to include the LiFePO<sub>4</sub>wered service, make it privileged, and give it access to the supervisor API:
+
+```yaml
+version: '2'
+services:
+  your-application:
+    build: ./balena-node-hello-world
+    ports:
+      - "80:80"
+  lifepo4wered-pi:
+    build: ./LiFePO4wered-Pi
+    privileged: true
+    labels:
+      io.balena.features.supervisor-api: '1'
+```
+
+If your application needs access to the LiFePO<sub>4</sub>wered device, the easiest approach may be to include the `lifepo4wered-cli` or `liblifepo4wered.so` with language bindings in your application's container, building it using the multistage approach demonstrated in our `Dockerfile`.
+

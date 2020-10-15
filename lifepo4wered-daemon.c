@@ -68,8 +68,15 @@ void set_term_handler(void) {
 
 void shut_down(void) {
   log_info("Triggering system shutdown");
+#ifdef BALENA
+  char *params[4] = {"sh", "-c", "curl -X POST " \
+    "\"$BALENA_SUPERVISOR_ADDRESS/v1/shutdown?" \
+    "apikey=$BALENA_SUPERVISOR_API_KEY\"", NULL};
+  execv("/bin/sh", params);
+#else
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
+#endif
 }
 
 /* If the LiFePO4wered module has RTC functionality and the current
