@@ -73,6 +73,9 @@ void shut_down(void) {
     "\"$BALENA_SUPERVISOR_ADDRESS/v1/shutdown?" \
     "apikey=$BALENA_SUPERVISOR_API_KEY\"", NULL};
   execv("/bin/sh", params);
+#elif defined SYSTEMD
+  char *params[3] = {"systemctl", "poweroff", NULL};
+  execv("/bin/systemctl", params);
 #else
   char *params[3] = {"init", "0", NULL};
   execv("/sbin/init", params);
