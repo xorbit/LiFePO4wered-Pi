@@ -1,49 +1,57 @@
 /* 
  * LiFePO4wered/Pi data module
- * Copyright (C) 2015-2020 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2026 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
 #define _DEFAULT_SOURCE
 #include <endian.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <string.h>
 #include "lifepo4wered-data.h"
 #include "lifepo4wered-access.h"
+#include <stdio.h>
 
 
-/* Number of I2C register versions defined */
+/* Number of register versions defined */
 
-#define I2C_REG_VER_COUNT     7
+#define I2C_REG_VER_COUNT_LEGACY  7
+#define REG_VER_NEW_START         10
+#define REG_VER_COUNT             1
 
 /* Minimum I2C register version that requires write unlock */
 
-#define I2C_WRUNLOCK_REG_VER  5
+#define I2C_WRUNLOCK_REG_VER      5
 
 /* Constant to use when a register is not availabled in a particular
  * register version */
 
-#define R_NA                  0xFF
+#define R_NA                      0xFF
 
 /* I2C access retries */
 
-#define I2C_RETRIES           20
+#define I2C_RETRIES               20
 
 /* I2C identical reads requirement */
 
-#define I2C_IDENTICAL_READS   3
+#define I2C_IDENTICAL_READS       3
 
 /* I2C retry delay in us */
 
-#define I2C_RETRY_DELAY       500
+#define I2C_RETRY_DELAY           500
 
 /* Generate strings for variable names */
 
-#define GENERATE_STRING(STRING) #STRING,
+#define GENERATE_STRING(STRING)   #STRING,
 
-const char *lifepo4wered_var_name[LFP_VAR_COUNT] = {
-  FOREACH_LIFEPO4WERED_VAR(GENERATE_STRING)
+const char *lifepo4wered_var_name_legacy[LFP_VAR_COUNT_LEGACY] = {
+  FOREACH_LIFEPO4WERED_VAR_LEGACY(GENERATE_STRING)
 };
 
+const char *lifepo4wered_var_name[LFP_VAR_COUNT - LFP_VAR_COUNT_LEGACY] = {
+  FOREACH_LIFEPO4WERED_VAR(GENERATE_STRING)
+};
 
 /* Structure to define variable scale factors */
 
@@ -54,8 +62,22 @@ struct sVarScale {
 
 /* Structure to define variable read and write behavior */
 
+struct sVarDefLegacy {
+  uint8_t       reg[I2C_REG_VER_COUNT_LEGACY];
+  uint8_t       read_bytes;
+  uint8_t       write_bytes;
+  uint8_t       sign_extend;
+};
+
 struct sVarDef {
-  uint8_t       reg[I2C_REG_VER_COUNT];
+  uint8_t       reg[REG_VER_COUNT];
+  uint8_t       read_bytes;
+  uint8_t       write_bytes;
+  uint8_t       sign_extend;
+};
+
+struct sVarDefGeneric {
+  uint8_t       reg;
   uint8_t       read_bytes;
   uint8_t       write_bytes;
   uint8_t       sign_extend;
@@ -64,7 +86,7 @@ struct sVarDef {
 /* This table defines scaling for all I2C registers, for different
  * scaling variants */
 
-static const struct sVarScale var_scale[LFP_VAR_COUNT][3] = {
+static const struct sVarScale var_scale[LFP_VAR_COUNT_LEGACY][3] = {
   /* I2C_REG_VER      */  { {      1,      1 }, {      1,      1 }, {      1,      1 } },
   /* I2C_ADDRESS      */  { {      1,      1 }, {      1,      1 }, {      1,      1 } },
   /* LED_STATE        */  { {      1,      1 }, {      1,      1 }, {      1,      1 } },
@@ -107,13 +129,13 @@ static const struct sVarScale var_scale[LFP_VAR_COUNT][3] = {
 /* This table covers I2C register scale variants used by each register
  * version */
 
-static const uint8_t var_scale_variant[I2C_REG_VER_COUNT] = {
+static const uint8_t var_scale_variant[I2C_REG_VER_COUNT_LEGACY] = {
   0, 0, 0, 0, 1, 1, 2
 };
 
 /* This table covers definitions of all I2C registers */
 
-static const struct sVarDef var_table[LFP_VAR_COUNT] = {
+static const struct sVarDefLegacy var_table_legacy[LFP_VAR_COUNT_LEGACY] = {
   /* I2C_REG_VER      */  { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 1, 0, 0 },
   /* I2C_ADDRESS      */  { { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01 }, 1, 1, 0 },
   /* LED_STATE        */  { { 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02 }, 1, 1, 0 },
@@ -153,36 +175,209 @@ static const struct sVarDef var_table[LFP_VAR_COUNT] = {
   /* CFG_WRITE        */  { { 0x11, 0x13, 0x15, 0x19, 0x19, 0x1D, 0x25 }, 1, 1, 0 },
 };
 
-/* I2C register version detected */
+static const struct sVarDef var_table[LFP_VAR_COUNT - LFP_VAR_COUNT_LEGACY] = {
+  /* REG_VERSION        */  { { 0x00 }, 1, 0, 0 },
+  /* FW_VERSION         */  { { 0x01 }, 1, 0, 0 },
+  /* I2C_ADDRESS        */  { { 0x02 }, 1, 1, 0 },
+  /* LED_STATE_LOAD_ON  */  { { 0x03 }, 1, 1, 0 },
+  /* BTN_STATE          */  { { 0x04 }, 1, 0, 0 },
+  /* V_REF              */  { { 0x05 }, 2, 2, 1 },
+  /* V_IN               */  { { 0x07 }, 2, 0, 1 },
+  /* V_CELL_BOT         */  { { 0x09 }, 2, 0, 1 },
+  /* V_CELL_TOP         */  { { 0x0B }, 2, 0, 1 },
+  /* V_BAT              */  { { 0x0D }, 2, 0, 1 },
+  /* V_SUP              */  { { 0x0F }, 2, 0, 1 },
+  /* V_OUT              */  { { 0x11 }, 2, 0, 1 },
+  /* I_IN               */  { { 0x13 }, 2, 0, 1 },
+  /* I_BAT              */  { { 0x15 }, 2, 0, 1 },
+  /* I_OUT              */  { { 0x17 }, 2, 0, 1 },
+  /* TEMP_INT           */  { { 0x19 }, 2, 0, 1 },
+  /* R_THRM             */  { { 0x1B }, 4, 0, 1 },
+  /* TEMP_THRM          */  { { 0x1F }, 2, 0, 1 },
+  /* R25_THRM           */  { { 0x21 }, 4, 4, 1 },
+  /* B_THRM             */  { { 0x25 }, 2, 2, 0 },
+  /* TEMP_SEL           */  { { 0x27 }, 1, 1, 0 },
+  /* TEMP               */  { { 0x28 }, 2, 0, 1 },
+  /* V_IN_OC            */  { { 0x2A }, 2, 0, 1 },
+  /* I_CHRG_MAX         */  { { 0x2C }, 2, 2, 1 },
+  /* I_CHRG_BAL         */  { { 0x2E }, 2, 0, 1 },
+  /* I_CHRG_UNDERTEMP   */  { { 0x30 }, 2, 2, 1 },
+  /* I_PRECHRG_PCT      */  { { 0x32 }, 1, 1, 0 },
+  /* I_CHRG_TERM_PCT    */  { { 0x33 }, 1, 1, 0 },
+  /* V_CELL_MIN         */  { { 0x34 }, 2, 2, 1 },
+  /* V_CELL_SHDN        */  { { 0x36 }, 2, 2, 1 },
+  /* V_CELL_BOOT        */  { { 0x38 }, 2, 2, 1 },
+  /* V_CELL_MAX         */  { { 0x3A }, 2, 2, 1 },
+  /* V_BAT_MIN          */  { { 0x3C }, 2, 2, 1 },
+  /* V_BAT_SHDN         */  { { 0x3E }, 2, 2, 1 },
+  /* V_BAT_BOOT         */  { { 0x40 }, 2, 2, 1 },
+  /* V_BAT_MAX          */  { { 0x42 }, 2, 2, 1 },
+  /* V_BAT_CV_PCT       */  { { 0x44 }, 1, 1, 0 },
+  /* V_BAT_CHRG_PCT     */  { { 0x45 }, 1, 1, 0 },
+  /* V_BAT_PRECHRG_PCT  */  { { 0x46 }, 1, 1, 0 },
+  /* V_IN_DROPOUT       */  { { 0x47 }, 2, 2, 1 },
+  /* V_IN_MIN_CHRG      */  { { 0x49 }, 2, 0, 1 },
+  /* P_IN_MAX           */  { { 0x4B }, 2, 2, 0 },
+  /* I_IN_MAX           */  { { 0x4D }, 2, 2, 1 },
+  /* I_IN_LIMIT         */  { { 0x4F }, 2, 0, 1 },
+  /* V_IN_OC_PCT        */  { { 0x51 }, 1, 1, 0 },
+  /* V_IN_MPP           */  { { 0x52 }, 2, 0, 1 },
+  /* V_IN_MPP_STEP      */  { { 0x54 }, 2, 2, 1 },
+  /* I_MIN_TRUST        */  { { 0x56 }, 2, 2, 1 },
+  /* I_OK_TRUST         */  { { 0x58 }, 2, 2, 1 },
+  /* CHRG_PID_KP        */  { { 0x5A }, 2, 2, 1 },
+  /* CHRG_PID_KI        */  { { 0x5C }, 2, 2, 1 },
+  /* CHRG_PID_KD        */  { { 0x5E }, 2, 2, 1 },
+  /* CHRG_TEMP_MIN      */  { { 0x60 }, 2, 2, 1 },
+  /* CHRG_TEMP_MAX      */  { { 0x62 }, 2, 2, 1 },
+  /* CHRG_STATE         */  { { 0x64 }, 1, 0, 0 },
+  /* HEATER_SEL         */  { { 0x65 }, 1, 1, 0 },
+  /* EXT_HEAT_MAX_PWM   */  { { 0x66 }, 1, 1, 0 },
+  /* LOAD_USB_PD        */  { { 0x67 }, 1, 1, 0 },
+  /* INPUT_USB_PD       */  { { 0x68 }, 1, 1, 0 },
+  /* V_OUT_MAX          */  { { 0x69 }, 2, 2, 1 },
+  /* V_IN_THRESHOLD     */  { { 0x6B }, 2, 2, 1 },
+  /* I_OUT_ON_BOOT      */  { { 0x6D }, 2, 0, 1 },
+  /* I_OUT_SHDN_DONE    */  { { 0x6F }, 2, 2, 1 },
+  /* BOOT_TIMEOUT       */  { { 0x71 }, 2, 2, 0 },
+  /* SHDN_TIMEOUT       */  { { 0x73 }, 2, 2, 0 },
+  /* RTC_TIME           */  { { 0x75 }, 4, 4, 0 },
+  /* RTC_WAKE_TIME      */  { { 0x79 }, 4, 4, 0 },
+  /* AUTO_BOOT          */  { { 0x7D }, 1, 1, 0 },
+  /* SHDN_DELAY         */  { { 0x7E }, 1, 1, 0 },
+  /* AUTO_SHDN_TIME     */  { { 0x7F }, 4, 4, 0 },
+  /* WATCHDOG_CFG       */  { { 0x83 }, 1, 1, 0 },
+  /* WATCHDOG_GRACE     */  { { 0x84 }, 1, 1, 0 },
+  /* WATCHDOG_TIMER     */  { { 0x85 }, 1, 1, 0 },
+  /* LOAD_RUNNING       */  { { 0x86 }, 1, 1, 0 },
+  /* STBY_WAKE_PERIOD   */  { { 0x87 }, 1, 1, 0 },
+  /* BAT_LOAD_PRESET    */  { { 0x88 }, 1, 1, 0 },
+  /* CFG_WRITE          */  { { 0x89 }, 1, 1, 0 }
+};
 
-static int32_t i2c_reg_ver = 0;
+/* Register version detected */
 
+static int32_t reg_ver = 0;
+
+
+/* Capitalize a string */
+
+static void capitalize(char *s) {
+  for (; *s; s++) {
+    *s = toupper(*s);
+  }
+}
+
+/* Get the variable from a string representation */
+
+enum eLiFePO4weredVar get_lifepo4wered_var_from_string(char *var) {
+  /* Capitalize the string */
+  capitalize(var);
+  /* Check if we have a I2C register version */
+  if (reg_ver <= 0) {
+    /* If not, read it */
+    reg_ver = read_lifepo4wered(REG_VERSION);
+  }
+  /* New or legacy device register version? */
+  if (reg_ver < REG_VER_NEW_START) {
+    /* Legacy device registers */
+    for (int i=0; i<LFP_VAR_COUNT_LEGACY; i++) {
+      if (strcmp(var, lifepo4wered_var_name_legacy[i]) == 0) {
+        return (enum eLiFePO4weredVar)i;
+      }
+    }
+  } else {
+    /* New device registers */
+    for (int i=LFP_VAR_FIRST_NEW; i<LFP_VAR_COUNT; i++) {
+      if (strcmp(var, lifepo4wered_var_name[i - LFP_VAR_FIRST_NEW]) == 0) {
+        return (enum eLiFePO4weredVar)i;
+      }
+    }
+  }
+  return LFP_VAR_INVALID;
+}
+
+/* Get the string representation of a variable */
+
+const char *get_lifepo4wered_var_name(enum eLiFePO4weredVar var) {
+  static const char unknown[] = "UNKNOWN";
+
+  /* Check if we have a I2C register version */
+  if (reg_ver <= 0) {
+    /* If not, read it */
+    reg_ver = read_lifepo4wered(REG_VERSION);
+  }
+  /* New or legacy device register version? */
+  if (reg_ver < REG_VER_NEW_START) {
+    /* Legacy device registers */
+    if (var < LFP_VAR_COUNT_LEGACY) {
+      return lifepo4wered_var_name_legacy[var];
+    }
+  } else {
+    /* New device registers */
+    if (var >= LFP_VAR_FIRST_NEW && var < LFP_VAR_COUNT) {
+      return lifepo4wered_var_name[var - LFP_VAR_FIRST_NEW];
+    }
+  }
+
+  return unknown;
+}
 
 /* Determine if the specified variable can be accessed in the specified
  * manner (read, write or both) and return a pointer to the variable
  * definition (internal function) */
 
 static bool can_access_lifepo4wered(enum eLiFePO4weredVar var,
-                    uint8_t access_mask, const struct sVarDef **vd) {
+                    uint8_t access_mask, struct sVarDefGeneric *vd) {
   /* Check if we have a I2C register version */
-  if (i2c_reg_ver <= 0) {
+  if (reg_ver <= 0) {
     /* If not, read it */
-    i2c_reg_ver = read_lifepo4wered(I2C_REG_VER);
+    reg_ver = read_lifepo4wered(REG_VERSION);
   }
-  /* Are the variable and I2C register version in defined range? */
-  if (var > I2C_REG_VER && var < LFP_VAR_COUNT &&
-      i2c_reg_ver > 0 && i2c_reg_ver <= I2C_REG_VER_COUNT) {
-    /* Get a pointer to the variable definition */
-    const struct sVarDef *var_def = &var_table[var];
-    /* Save it to the provided pointer, if one is provided */
-    if (vd) {
-      *vd = var_def;
+  /* New or legacy device register version? */
+  if (reg_ver < REG_VER_NEW_START) {
+    /* Legacy device registers */
+    /* Are the variable and I2C register version in defined range? */
+    if (var >= 0  && var < LFP_VAR_COUNT_LEGACY &&
+        reg_ver > 0 && reg_ver <= I2C_REG_VER_COUNT_LEGACY) {
+      /* Get a pointer to the variable definition */
+      const struct sVarDefLegacy *var_def = &var_table_legacy[var];
+      /* Save it to the provided pointer, if one is provided */
+      if (vd) {
+        vd->reg = var_def->reg[reg_ver - 1];
+        vd->read_bytes = var_def->read_bytes;
+        vd->write_bytes = var_def->write_bytes;
+        vd->sign_extend = var_def->sign_extend;
+      }
+      /* Is this variable defined for the register version? */
+      if (var_def->reg[reg_ver - 1] != R_NA) {
+        /* Then check the access */
+        return ((access_mask & ACCESS_READ) && var_def->read_bytes) ||
+                ((access_mask & ACCESS_WRITE) && var_def->write_bytes);
+      }
     }
-    /* Is this variable defined for the register version? */
-    if (var_def->reg[i2c_reg_ver - 1] != R_NA) {
-      /* Then check the access */
-      return ((access_mask & ACCESS_READ) && var_def->read_bytes) ||
-              ((access_mask & ACCESS_WRITE) && var_def->write_bytes);
+  } else {
+    /* New device registers */
+    /* Adjust variable start */
+    var -= LFP_VAR_FIRST_NEW;
+    /* Are the variable and register version in defined range? */
+    if (var >= 0 && var < (LFP_VAR_COUNT - LFP_VAR_COUNT_LEGACY) &&
+        reg_ver < (REG_VER_NEW_START + REG_VER_COUNT)) {
+      /* Get a pointer to the variable definition */
+      const struct sVarDef *var_def = &var_table[var];
+      /* Save it to the provided pointer, if one is provided */
+      if (vd) {
+        vd->reg = var_def->reg[reg_ver - REG_VER_NEW_START];
+        vd->read_bytes = var_def->read_bytes;
+        vd->write_bytes = var_def->write_bytes;
+        vd->sign_extend = var_def->sign_extend;
+      }
+      /* Is this variable defined for the register version? */
+      if (var_def->reg[reg_ver - REG_VER_NEW_START] != R_NA) {
+        /* Then check the access */
+        return ((access_mask & ACCESS_READ) && var_def->read_bytes) ||
+                ((access_mask & ACCESS_WRITE) && var_def->write_bytes);
+      }
     }
   }
   /* Access not available */
@@ -193,11 +388,7 @@ static bool can_access_lifepo4wered(enum eLiFePO4weredVar var,
  * manner (read, write or both, external function) */
 
 bool access_lifepo4wered(enum eLiFePO4weredVar var, uint8_t access_mask) {
-  if (var == I2C_REG_VER && (access_mask & ACCESS_READ)) {
-    return true;
-  } else {
-    return can_access_lifepo4wered(var, access_mask, NULL);
-  }
+  return can_access_lifepo4wered(var, access_mask, NULL);
 }
 
 /* Read data from LiFePO4wered/Pi
@@ -206,38 +397,43 @@ bool access_lifepo4wered(enum eLiFePO4weredVar var, uint8_t access_mask) {
  * 100kHz, because other interrupts that are running may cause too much
  * latency and the first bit comes out wrong.  We fix that by requiring
  * a number of identical reads.  This also takes care of rejecting
- * multi-byte values that change in the middle of a read, so shadow
- * buffering reads on the micro may not be needed anymore. */
+ * multi-byte values that change in the middle of a read.
+ * We don't do this for new devices because some readings like voltage
+ * can change too fast (5000 times per second) and the CH32V does not
+ * have weak drivers and slow I2C performance. */
 
 int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
-  const struct sVarDef *var_def;
-  if (var == I2C_REG_VER ||
-      can_access_lifepo4wered(var, ACCESS_READ, &var_def)) {
+  struct sVarDefGeneric var_def;
+  if (var == I2C_REG_VER_LEGACY || var == REG_VERSION ||
+      (can_access_lifepo4wered(var, ACCESS_READ, &var_def) && reg_ver)) {
     uint8_t match_tries = 0;
     union {
       uint8_t   b[4];
-      int16_t	h[2];
+      int16_t	  h[2];
       int32_t   i;
     } data, match_data;
     data.i = 0;
     match_data.i = 0;
-    uint8_t reg = var == I2C_REG_VER ?
-                  I2C_REG_VER : var_def->reg[i2c_reg_ver - 1];
-    uint8_t read_bytes = var == I2C_REG_VER ? 1 : var_def->read_bytes;
-    uint8_t sign_extend = var == I2C_REG_VER ? 0 : var_def->sign_extend;
+    uint8_t reg = (var == I2C_REG_VER_LEGACY || var == REG_VERSION)
+                          ? 0 : var_def.reg;
+    uint8_t read_bytes = (var == I2C_REG_VER_LEGACY || var == REG_VERSION)
+                          ? 1 : var_def.read_bytes;
+    uint8_t sign_extend = (var == I2C_REG_VER_LEGACY || var == REG_VERSION)
+                          ? 0 : var_def.sign_extend;
     for (uint8_t retries = 0; retries < I2C_RETRIES; retries++) {
-      usleep(500);
       if (read_lifepo4wered_data(reg, read_bytes, data.b)) {
         if (!match_tries || data.i == match_data.i) {
-          if (match_tries >= I2C_IDENTICAL_READS - 1) {
-            if (var == I2C_REG_VER) {
+          if (reg_ver >= REG_VER_NEW_START ||
+              match_tries >= I2C_IDENTICAL_READS - 1) {
+            if (sign_extend) {
+              if (read_bytes == 2) data.i = data.h[0];
+              if (read_bytes == 1) data.i = data.b[0];
+            }
+            if (var == I2C_REG_VER_LEGACY || var >= LFP_VAR_FIRST_NEW) {
               return le32toh(data.i);
             }
             const struct sVarScale *scale =
-                    &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
-	    if (sign_extend) {
-              data.i = data.h[0];
-            }
+                &var_scale[var][var_scale_variant[reg_ver - 1]];
             return (le32toh(data.i) * scale->mul + scale->div / 2)
                     / scale->div;
           }
@@ -247,6 +443,7 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
         }
         match_data.i = data.i;
       }
+      usleep(500);
     }
     return -2;
   }
@@ -256,19 +453,23 @@ int32_t read_lifepo4wered(enum eLiFePO4weredVar var) {
 /* Write data to LiFePO4wered/Pi */
 
 int32_t write_lifepo4wered(enum eLiFePO4weredVar var, int32_t value) {
-  const struct sVarDef *var_def;
-  if (can_access_lifepo4wered(var, ACCESS_WRITE, &var_def) && i2c_reg_ver) {
+  struct sVarDefGeneric var_def;
+  if (can_access_lifepo4wered(var, ACCESS_WRITE, &var_def) && reg_ver) {
     union {
       uint8_t   b[4];
       int32_t   i;
     } data;
-    const struct sVarScale *scale =
-          &var_scale[var][var_scale_variant[i2c_reg_ver - 1]];
-    data.i = htole32((value * scale->div + scale->mul / 2) / scale->mul);
+    if (reg_ver >= REG_VER_NEW_START) {
+      data.i = htole32(value);
+    } else {
+      const struct sVarScale *scale =
+            &var_scale[var][var_scale_variant[reg_ver - 1]];
+      data.i = htole32((value * scale->div + scale->mul / 2) / scale->mul);
+    }
     for (uint8_t retries = 0; retries < I2C_RETRIES; retries++) {
-      if (write_lifepo4wered_data(var_def->reg[i2c_reg_ver - 1],
-                                  var_def->write_bytes, data.b,
-                                  i2c_reg_ver >= I2C_WRUNLOCK_REG_VER)) {
+      if (write_lifepo4wered_data(var_def.reg,
+                                  var_def.write_bytes, data.b,
+                                  reg_ver >= I2C_WRUNLOCK_REG_VER)) {
         return read_lifepo4wered(var);
       }
     }

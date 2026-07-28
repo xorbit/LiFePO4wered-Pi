@@ -52,7 +52,7 @@ void print_help(char *name, char *error, uint8_t access_mask) {
   }
   for (int i=0; i<LFP_VAR_COUNT; i++) {
     if (access_lifepo4wered(i, access_mask)) {
-      printf("\t%s\n", lifepo4wered_var_name[i]);
+      printf("\t%s\n", get_lifepo4wered_var_name(i));
     }
   }
 }
@@ -95,18 +95,6 @@ enum eOperation get_operation(char *op, enum eDataFormat *fmt) {
   return OP_INVALID;
 }
 
-/* Get the variable from the command line variable argument */
-
-enum eLiFePO4weredVar get_variable(char *var) {
-  capitalize(var);
-  for (int i=0; i<LFP_VAR_COUNT; i++) {
-    if (strcmp(var, lifepo4wered_var_name[i]) == 0) {
-      return (enum eLiFePO4weredVar)i;
-    }
-  }
-  return LFP_VAR_INVALID;
-}
-
 /* Program entry point */
 
 int main(int argc, char *argv[]) {
@@ -137,7 +125,7 @@ int main(int argc, char *argv[]) {
       return 3;
     }
   } else {
-    var = get_variable(argv[2]);
+    var = get_lifepo4wered_var_from_string(argv[2]);
   }
 
   if (var == LFP_VAR_INVALID) {
@@ -163,9 +151,9 @@ int main(int argc, char *argv[]) {
         if (access_lifepo4wered(i, access_mask)) {
           value = read_lifepo4wered(i);
           if (fmt == DF_DEC) {
-            printf("%s = %d\n", lifepo4wered_var_name[i], value);
+            printf("%s = %d\n", get_lifepo4wered_var_name(i), value);
           } else {
-            printf("%s = 0x%04X\n", lifepo4wered_var_name[i], value);
+            printf("%s = 0x%04X\n", get_lifepo4wered_var_name(i), value);
           }
         }
       }
