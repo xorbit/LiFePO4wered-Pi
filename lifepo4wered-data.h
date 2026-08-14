@@ -110,7 +110,12 @@
   LIFEPO4WERED_VAR(CHRG_PID_KI)                           \
   LIFEPO4WERED_VAR(CHRG_PID_KD)                           \
   LIFEPO4WERED_VAR(CHRG_TEMP_MIN)                         \
+  LIFEPO4WERED_VAR(CHRG_TEMP_COOL)                        \
+  LIFEPO4WERED_VAR(CHRG_TEMP_WARM)                        \
   LIFEPO4WERED_VAR(CHRG_TEMP_MAX)                         \
+  LIFEPO4WERED_VAR(I_CHRG_COOL_PCT)                       \
+  LIFEPO4WERED_VAR(I_CHRG_WARM_PCT)                       \
+  LIFEPO4WERED_VAR(V_BAT_WARM_PCT)                        \
   LIFEPO4WERED_VAR(CHRG_STATE)                            \
   LIFEPO4WERED_VAR(HEATER_SEL)                            \
   LIFEPO4WERED_VAR(EXT_HEAT_MAX_PWM)                      \
@@ -132,6 +137,9 @@
   LIFEPO4WERED_VAR(WATCHDOG_TIMER)                        \
   LIFEPO4WERED_VAR(LOAD_RUNNING)                          \
   LIFEPO4WERED_VAR(STBY_WAKE_PERIOD)                      \
+  LIFEPO4WERED_VAR(BAT_SOC_PCT)                           \
+  LIFEPO4WERED_VAR(BAT_CAPACITY)                          \
+  LIFEPO4WERED_VAR(BAT_CAPACITY_DET)                      \
   LIFEPO4WERED_VAR(BAT_LOAD_PRESET)                       \
   LIFEPO4WERED_VAR(CFG_WRITE)                             \
 
@@ -162,7 +170,8 @@ enum eLiFePO4weredVar {
 #define LED_STATE_ON            0x01
 #define LED_STATE_PULSING       0x02
 #define LED_STATE_FLASHING      0x03
-#define LED_STATE_PULSE_UP      0x04
+#define LED_STATE_TOUCH         0x04
+#define LED_STATE_PULSE_UP      0x05
 
 /* Auto boot settings */
 
