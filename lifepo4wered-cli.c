@@ -1,6 +1,6 @@
 /* 
  * LiFePO4wered/Pi variable read/write command line tool
- * Copyright (C) 2015-2020 Patrick Van Oosterwijck
+ * Copyright (C) 2015-2026 Patrick Van Oosterwijck
  * Released under the GPL v2
  */
 
@@ -50,7 +50,7 @@ void print_help(char *name, char *error, uint8_t access_mask) {
   } else if (access_mask & ACCESS_WRITE) {
     printf("Available variables for WRITE:\n");
   }
-  for (int i=0; i<LFP_VAR_COUNT; i++) {
+  for (int i = 0; i < LFP_VAR_COUNT; i++) {
     if (access_lifepo4wered(i, access_mask)) {
       printf("\t%s\n", get_lifepo4wered_var_name(i));
     }
@@ -85,7 +85,7 @@ enum eOperation get_operation(char *op, enum eDataFormat *fmt) {
     { "PUT",      OP_WRITE, DF_DATA },
   };
   capitalize(op);
-  for (int i=0; i<sizeof(op_table)/sizeof(struct sOpRef); i++) {
+  for (int i = 0; i < sizeof(op_table)/sizeof(struct sOpRef); i++) {
     if (strcmp(op, op_table[i].s) == 0) {
       if (fmt) *fmt = op_table[i].fmt;
       return op_table[i].op;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
         printf("0x%04X\n", value);
       }
     } else {
-      for (int i=0; i<LFP_VAR_COUNT; i++) {
+      for (int i = 0; i < LFP_VAR_COUNT; i++) {
         if (access_lifepo4wered(i, access_mask)) {
           value = read_lifepo4wered(i);
           if (fmt == DF_DEC) {

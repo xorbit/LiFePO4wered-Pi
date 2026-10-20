@@ -54,24 +54,30 @@
   LIFEPO4WERED_VAR(CFG_WRITE)                             \
 
 /* Generate enumeration and corresponding strings of available
- * LiFePO4wered variables - Modern devices */
+ * LiFePO4wered variables - Modern devices, with optional
+ * legacy name */
 
 #define FOREACH_LIFEPO4WERED_VAR(LIFEPO4WERED_VAR)        \
-  LIFEPO4WERED_VAR(REG_VERSION)                           \
+  LIFEPO4WERED_VAR(REG_VERSION, I2C_REG_VER)              \
   LIFEPO4WERED_VAR(FW_VERSION)                            \
   LIFEPO4WERED_VAR(I2C_ADDRESS)                           \
-  LIFEPO4WERED_VAR(LED_STATE_LOAD_ON)                     \
-  LIFEPO4WERED_VAR(BTN_STATE)                             \
+  LIFEPO4WERED_VAR(LED_STATE_LOAD_ON, LED_STATE)          \
+  LIFEPO4WERED_VAR(BTN_STATE, TOUCH_STATE)                \
+  LIFEPO4WERED_VAR(TOUCH_CAP_CYCLES)                      \
+  LIFEPO4WERED_VAR(TOUCH_THRESHOLD)                       \
+  LIFEPO4WERED_VAR(TOUCH_HYSTERESIS)                      \
+  LIFEPO4WERED_VAR(DCO_RSEL)                              \
+  LIFEPO4WERED_VAR(DCO_DCOMOD)                            \
   LIFEPO4WERED_VAR(V_REF)                                 \
-  LIFEPO4WERED_VAR(V_IN)                                  \
+  LIFEPO4WERED_VAR(V_IN, VIN)                             \
   LIFEPO4WERED_VAR(V_CELL_BOT)                            \
   LIFEPO4WERED_VAR(V_CELL_TOP)                            \
-  LIFEPO4WERED_VAR(V_BAT)                                 \
+  LIFEPO4WERED_VAR(V_BAT, VBAT)                           \
   LIFEPO4WERED_VAR(V_SUP)                                 \
-  LIFEPO4WERED_VAR(V_OUT)                                 \
+  LIFEPO4WERED_VAR(V_OUT, VOUT)                           \
   LIFEPO4WERED_VAR(I_IN)                                  \
   LIFEPO4WERED_VAR(I_BAT)                                 \
-  LIFEPO4WERED_VAR(I_OUT)                                 \
+  LIFEPO4WERED_VAR(I_OUT, IOUT)                           \
   LIFEPO4WERED_VAR(TEMP_INT)                              \
   LIFEPO4WERED_VAR(R_THRM)                                \
   LIFEPO4WERED_VAR(TEMP_THRM)                             \
@@ -89,9 +95,9 @@
   LIFEPO4WERED_VAR(V_CELL_SHDN)                           \
   LIFEPO4WERED_VAR(V_CELL_BOOT)                           \
   LIFEPO4WERED_VAR(V_CELL_MAX)                            \
-  LIFEPO4WERED_VAR(V_BAT_MIN)                             \
-  LIFEPO4WERED_VAR(V_BAT_SHDN)                            \
-  LIFEPO4WERED_VAR(V_BAT_BOOT)                            \
+  LIFEPO4WERED_VAR(V_BAT_MIN, VBAT_MIN)                   \
+  LIFEPO4WERED_VAR(V_BAT_SHDN, VBAT_SHDN)                 \
+  LIFEPO4WERED_VAR(V_BAT_BOOT, VBAT_BOOT)                 \
   LIFEPO4WERED_VAR(V_BAT_MAX)                             \
   LIFEPO4WERED_VAR(V_BAT_CV_PCT)                          \
   LIFEPO4WERED_VAR(V_BAT_CHRG_PCT)                        \
@@ -121,21 +127,27 @@
   LIFEPO4WERED_VAR(EXT_HEAT_MAX_PWM)                      \
   LIFEPO4WERED_VAR(LOAD_USB_PD)                           \
   LIFEPO4WERED_VAR(INPUT_USB_PD)                          \
-  LIFEPO4WERED_VAR(V_OUT_MAX)                             \
-  LIFEPO4WERED_VAR(V_IN_THRESHOLD)                        \
+  LIFEPO4WERED_VAR(V_OUT_MAX, VOUT_MAX)                   \
+  LIFEPO4WERED_VAR(V_IN_THRESHOLD, VIN_THRESHOLD)         \
   LIFEPO4WERED_VAR(I_OUT_ON_BOOT)                         \
-  LIFEPO4WERED_VAR(I_OUT_SHDN_DONE)                       \
-  LIFEPO4WERED_VAR(BOOT_TIMEOUT)                          \
-  LIFEPO4WERED_VAR(SHDN_TIMEOUT)                          \
+  LIFEPO4WERED_VAR(I_OUT_SHDN_DONE, IOUT_SHDN_THRESHOLD)  \
+  LIFEPO4WERED_VAR(VOFFSET_ADC)                           \
+  LIFEPO4WERED_VAR(VBAT_OFFSET)                           \
+  LIFEPO4WERED_VAR(VOUT_OFFSET)                           \
+  LIFEPO4WERED_VAR(VIN_OFFSET)                            \
+  LIFEPO4WERED_VAR(IOUT_OFFSET)                           \
+  LIFEPO4WERED_VAR(BOOT_TIMEOUT, PI_BOOT_TO)              \
+  LIFEPO4WERED_VAR(SHDN_TIMEOUT, PI_SHDN_TO)              \
   LIFEPO4WERED_VAR(RTC_TIME)                              \
   LIFEPO4WERED_VAR(RTC_WAKE_TIME)                         \
   LIFEPO4WERED_VAR(AUTO_BOOT)                             \
+  LIFEPO4WERED_VAR(WAKE_TIME)                             \
   LIFEPO4WERED_VAR(SHDN_DELAY)                            \
   LIFEPO4WERED_VAR(AUTO_SHDN_TIME)                        \
   LIFEPO4WERED_VAR(WATCHDOG_CFG)                          \
   LIFEPO4WERED_VAR(WATCHDOG_GRACE)                        \
   LIFEPO4WERED_VAR(WATCHDOG_TIMER)                        \
-  LIFEPO4WERED_VAR(LOAD_RUNNING)                          \
+  LIFEPO4WERED_VAR(LOAD_RUNNING, PI_RUNNING)              \
   LIFEPO4WERED_VAR(STBY_WAKE_PERIOD)                      \
   LIFEPO4WERED_VAR(BAT_SOC_PCT)                           \
   LIFEPO4WERED_VAR(BAT_CAPACITY)                          \
@@ -144,15 +156,20 @@
   LIFEPO4WERED_VAR(CFG_WRITE)                             \
 
 enum eLiFePO4weredVar {
-#define GENERATE_ENUM(ENUM) ENUM##_LEGACY,
-  FOREACH_LIFEPO4WERED_VAR_LEGACY(GENERATE_ENUM)
-#undef GENERATE_ENUM
-#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_ENUM_1(ENUM)         ENUM,
+#define GENERATE_ENUM_2(ENUM, LNAME)                      \
+      ENUM,                                               \
+      LNAME = ENUM,
+#define GENERATE_ENUM_X(x, A, B, FUNC, ...) FUNC
+#define GENERATE_ENUM(...)                                \
+      GENERATE_ENUM_X(,##__VA_ARGS__,                     \
+          GENERATE_ENUM_2(__VA_ARGS__),                   \
+          GENERATE_ENUM_1(__VA_ARGS__),                   \
+          GENERATE_ENUM_0(__VA_ARGS__)                    \
+      )
   FOREACH_LIFEPO4WERED_VAR(GENERATE_ENUM)
   LFP_VAR_COUNT,
-  LFP_VAR_INVALID = LFP_VAR_COUNT,
-  LFP_VAR_COUNT_LEGACY = REG_VERSION,
-  LFP_VAR_FIRST_NEW = REG_VERSION
+  LFP_VAR_INVALID = LFP_VAR_COUNT
 };
 
 /* Touch states and masks */
