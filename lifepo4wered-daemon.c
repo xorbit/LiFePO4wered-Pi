@@ -86,27 +86,37 @@ void shut_down(void) {
  * system time is off more than the limit of time difference, set
  * the system time from the RTC */
 
+/* Reject uninitialized RTC values rather than resetting Linux into 1970.
+ * A battery-backed controller can retain uptime without valid wall-clock time. */
+#define RTC_MIN_VALID_TIME 1577836800LL /* 2020-01-01 UTC */
+#define RTC_ROLLOVER_ATTEMPTS 40
+
 void system_time_from_rtc(void) {
-  /* Make sure the connected LiFePO4wered module has RTC functionality */
-  if (!access_lifepo4wered(RTC_TIME, ACCESS_READ))
+  if (!access_lifepo4wered(RTC_TIME, ACCESS_READ)) return;
+  int32_t rtc = read_lifepo4wered(RTC_TIME);
+  if (rtc < RTC_MIN_VALID_TIME) {
+    log_info("Ignoring invalid or uninitialized RTC timestamp: %ld", (long)rtc);
     return;
-  /* Is the time different enough? */
-  if (abs(read_lifepo4wered(RTC_TIME) - (int32_t)time(NULL)) >= RTC_SET_DIFF) {
-    /* Wait until the RTC time changes */
-    struct timespec new_ts = {0};
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = RTC_CHECK_DELAY;
-    int32_t start_time = read_lifepo4wered(RTC_TIME);
-    do {
-      nanosleep(&ts, NULL);
-      new_ts.tv_sec = read_lifepo4wered(RTC_TIME);
-    } while(new_ts.tv_sec == start_time);
-    /* Set the system time to the RTC time */
-    clock_settime(CLOCK_REALTIME, &new_ts);
-    /* Log message */
-    log_info("System time restored from RTC: %li", new_ts.tv_sec);
   }
+  if (llabs((long long)rtc - (long long)time(NULL)) < RTC_SET_DIFF) return;
+  struct timespec delay = {0, RTC_CHECK_DELAY};
+  for (unsigned int attempt = 0; attempt < RTC_ROLLOVER_ATTEMPTS; attempt++) {
+    nanosleep(&delay, NULL);
+    int32_t next = read_lifepo4wered(RTC_TIME);
+    if (next < RTC_MIN_VALID_TIME) {
+      log_info("RTC read failed or returned an invalid timestamp");
+      return;
+    }
+    if (next != rtc) {
+      struct timespec value = {(time_t)next, 0};
+      if (clock_settime(CLOCK_REALTIME, &value) == 0)
+        log_info("System time restored from RTC: %ld", (long)next);
+      else
+        log_info("Failed to restore system time from RTC");
+      return;
+    }
+  }
+  log_info("RTC did not advance; leaving the system clock unchanged");
 }
 
 /* If the LiFePO4wered module has RTC functionality, save the current
@@ -116,6 +126,8 @@ void system_time_to_rtc(void) {
   /* Make sure the connected LiFePO4wered module has RTC functionality */
   if (!access_lifepo4wered(RTC_TIME, ACCESS_WRITE))
     return;
+  /* Do not overwrite the RTC with an unsynchronized epoch-era system time. */
+  if (time(NULL) < RTC_MIN_VALID_TIME || time(NULL) > INT32_MAX) return;
   /* Wait until the system time changes */
   struct timespec ts;
   ts.tv_sec = 0;
