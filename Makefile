@@ -62,3 +62,12 @@ user-install: install enable-bus enable-init-$(USE_SYSTEMD)
 
 clean:
 	rm -rf build
+
+# No I2C device or clock-setting privileges are needed for these mocked tests.
+.PHONY: test
+test: build/rtc-test
+	./build/rtc-test
+
+build/rtc-test: tests/rtc_test.c lifepo4wered-daemon.c lifepo4wered-data.h
+	@mkdir -p build
+	$(CC) $(CFLAGS) -I. tests/rtc_test.c -o $@

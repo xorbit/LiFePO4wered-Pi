@@ -158,3 +158,11 @@ services:
 
 If your application needs access to the LiFePO<sub>4</sub>wered device, the easiest approach may be to include the `lifepo4wered-cli` or `liblifepo4wered.so` with language bindings in your application's container, building it using the multistage approach demonstrated in our `Dockerfile`.  Make sure you then also give your own application access to the I<sup>2</sup>C bus.
 
+
+## Tests
+
+Run `make test` to exercise RTC restoration using mocked I2C and clock calls.
+The tests cover uninitialized dates, read errors, a valid advancing RTC, a
+stalled RTC, unsupported RTC hardware, and guards against saving invalid system
+time. They do not access hardware or change the host clock, and need no root
+privileges or systemd development library.
